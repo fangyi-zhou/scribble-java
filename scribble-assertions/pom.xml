@@ -39,7 +39,7 @@
 		<dependency>
 			<groupId>org.scribble</groupId>
 			<artifactId>scribble-test</artifactId>
-			<!-- FIXME: version? -->		
+			<!-- FIXME: version? -->
 			<version>0.4.4-SNAPSHOT</version>
 			<type>test-jar</type>
 			<scope>test</scope>
@@ -58,6 +58,13 @@
 		<dependency>
 			<groupId>org.antlr</groupId>
 			<artifactId>antlr-runtime</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.microsoft</groupId>
+			<artifactId>z3</artifactId>
+			<version>4.5.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/com.microsoft.z3.jar</systemPath>
 		</dependency>
 	</dependencies>
 
