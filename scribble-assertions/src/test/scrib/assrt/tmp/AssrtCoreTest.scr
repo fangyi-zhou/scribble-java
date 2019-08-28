@@ -165,6 +165,38 @@ type <dotnet> "System.UInt32" from "..." as int;
 //- conflict between unsat checking, state vars (init values, constants) and recursion -- "strict" vs. potential unsat
 //- theorem: no assertion prog error at run-time -- no unsat theorem?
 
+
+
+// - fix syntax -- TODO: deprecate AssrtStateVarAnnotNode for an intermediary CommonTree
+// - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
+
+
+global protocol Proto1(role A, role B) @"<x:=0> True" //@"<x:=0>"
+{
+	1() from A to B;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 global protocol Proto1(role A, role B) //@<x:="0">  //"arithmetic/boolean expr"
 {

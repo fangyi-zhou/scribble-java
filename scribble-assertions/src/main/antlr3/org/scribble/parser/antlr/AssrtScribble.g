@@ -223,6 +223,7 @@ tokens
   import org.scribble.ext.assrt.ast.AssrtAExprNode;
   import org.scribble.ext.assrt.ast.AssrtBExprNode;
   import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
+  import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 }
 
 
@@ -527,6 +528,20 @@ assrt_gprotoheader:
 
 // Assrt
 |
+	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' EXTID
+			// TODO: paramdecls
+->
+	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
+			//^(ASSRT_STATEVARDECL_LIST) 
+			{AssertionsParser.parseStateVarDeclList($EXTID).getStateVarDeclListChild()}
+			{AssertionsParser.parseStateVarDeclList($EXTID).getAnnotAssertChild()})
+			//{new AssrtBExprNode($EXTID.type, $EXTID, (AssrtBFormula) AssertionsParser.parseStateVarDeclList($EXTID).getChild(0))})  // $id.text doesn't seem to work
+//{AssertionsParser.parseStateVarDeclList($EXTID).getChild(0)})
+			// use ".tree" for Tree instead of .text String
+;
+
+
+/*|
 	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' assrt_statevardecls 
 			assrt_statevarassrt? 
 			//assrt_statevar_annot
@@ -545,15 +560,9 @@ assrt_gprotoheader:
 			//{null}  // ANTLR is filtering this somewhere?  added by the parser, but not present in getChildren
 			^(ASSRT_STATEVARDECL_LIST)  // Cf. ^(PARAMDECL_LIST)
 			assrt_statevarassrt)
-;
+*/
 // Following same pattern as gmsgtransfer: explicitly invoke AssertionsParser, and extra assertion element only for new category
 // -- later translation by AssrtAntlrToScribParser converts original nodes to empty-assertion new nodes
-	
-assrt_statevarassrt:  // FIXME: refactor with assrt_gmsgtransfer_annot
-	t=EXTID
-->
-	EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
-;
 
 assrt_statevardecls:
 	'<' assrt_statevardecl (',' assrt_statevardecl)* '>'
@@ -566,6 +575,12 @@ assrt_statevardecl:
 ->
 	^(ASSRT_STATEVARDECL assrt_intvarname 
 			EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)])
+;
+	
+assrt_statevarassrt:  // FIXME: refactor with assrt_gmsgtransfer_annot
+	t=EXTID
+->
+	EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
 ;
 	
 /*assrt_statevar_annot:

@@ -1,4 +1,4 @@
-//$ java -cp scribble-parser/lib/antlr-3.5.2-complete.jar org.antlr.Tool -o scribble-assertions/target/generated-sources/antlr3 scribble-assertions/src/main/antlr3/org/scribble/parser/antlr/Assertions.g
+ //$ java -cp scribble-parser/lib/antlr-3.5.2-complete.jar org.antlr.Tool -o scribble-assertions/target/generated-sources/antlr3 scribble-assertions/src/main/antlr3/org/scribble/parser/antlr/Assertions.g
 
 // Windows:
 //$ java -cp scribble-parser/lib/antlr-3.5.2-complete.jar org.antlr.Tool -o scribble-assertions/target/generated-sources/antlr3/org/scribble/parser/antlr scribble-assertions/src/main/antlr3/org/scribble/parser/antlr/Assertions.g
@@ -12,6 +12,7 @@ options
 	language = Java;
 	output = AST;
 	ASTLabelType = CommonTree;
+	//ASTLabelType = ScribNodeBase;
 }
 
 tokens
@@ -50,12 +51,12 @@ tokens
 	TRUE;
 	FALSE;
 	
-	ASSRT_STATEVARDECLLIST;
+	ASSRT_STATEVARDECL_LIST;
 	ASSRT_STATEVARDECL;
 	ASSRT_STATEVARDECLLISTASSERTION;
-	ASSRT_STATEVARARGLIST;
-	
-	ASSRT_EMPTYASS;
+	/*ASSRT_STATEVARARGLIST;
+	ASSRT_EMPTYASS;*/
+	ASSRT_STATEVARANNOTNODE;
 }
 
 
@@ -63,11 +64,19 @@ tokens
 {
 	package org.scribble.parser.antlr;
 	
+  import org.scribble.ast.ScribNodeBase;
+
+  import org.scribble.ext.assrt.ast.AssrtAExprNode;
+  import org.scribble.ext.assrt.ast.AssrtBExprNode;
 	import org.scribble.ext.assrt.ast.AssrtStateVarAnnotNode;
+	import org.scribble.ext.assrt.ast.AssrtStateVarDeclList;
 	import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 	import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 	import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
+  import org.scribble.ext.assrt.parser.assertions.AssertionsTreeAdaptor;
 	import org.scribble.ext.assrt.parser.assertions.AssrtAntlrToFormulaParser;
+
+  import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
 }
 
 @lexer::header
@@ -102,6 +111,20 @@ tokens
 		return (AssrtBFormula) res;
 	}
 
+	// TODO: refactor with above
+	public static AssrtBFormula parseAssertion(CommonTree tree) 
+			throws RecognitionException
+	{
+		AssrtSmtFormula<?> res = AssrtAntlrToFormulaParser
+				.getInstance().parse(tree);
+		if (!(res instanceof AssrtBFormula))
+		{
+			System.out.println("Invalid assertion syntax: " + tree);
+			System.exit(1);
+		}
+		return (AssrtBFormula) res;
+	}
+
 	public static AssrtAFormula parseArithAnnotation(String source) 
 			throws RecognitionException
 	{
@@ -113,7 +136,83 @@ tokens
 				.getInstance().parse((CommonTree) parser.arith_root().getTree());
 		return res;
 	}
+
+	/*public static CommonTree parseStateVarDeclList(String source) 
+			throws RecognitionException
+	{
+		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
+		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
+		AssertionsParser parser = new AssertionsParser(
+				new CommonTokenStream(lexer));
+		parser.setTreeAdaptor(new AssertionsTreeAdaptor());
+		return (CommonTree) parser.statevardecllist().getTree();
+	}*/
+  
+	// TODO: return "helper" annot node
+	// t is an EXTID token
+	//public static AssrtBExprNode parseStateVarDeclList(Token t) 
+	public static AssrtStateVarAnnotNode parseStateVarDeclList(Token t) 
+			throws RecognitionException
+	{
+		String source = t.getText();
+		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
+		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
+		AssertionsParser parser = new AssertionsParser(
+				new CommonTokenStream(lexer));
+		parser.setTreeAdaptor(new AssertionsTreeAdaptor());
+		//AssrtSmtFormula<?> res = AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) parser.statevardecllist().getTree());
+
+		CommonTree tree = (CommonTree) parser.statevardecllist().getTree();
+		//System.out.println("aaa: " + tree + " ,, " + tree.getChildCount() + " ,, " + tree.getChild(0));
+		return (AssrtStateVarAnnotNode) tree;
+
+		/*
+		CommonTree tmp = (CommonTree) tree.getChild(0);  // ASSRT_STATEVARDECLLISTASSERTION
+		System.out.println("aaa: " + tmp);
+
+		//if (tmp.getChildCount() == 0)
+		{
+			AssrtSmtFormula<?> res = AssrtAntlrToFormulaParser
+					.getInstance().parse((CommonTree) tmp.getChild(0));
+			if (!(res instanceof AssrtBFormula))
+			{
+				System.out.println("Invalid assertion syntax: " + source);// + " ,, " + res.getChild(0) + " ,, " + res.getChild(0).getClass()); 
+				System.exit(1);
+			}
+			//return new AssrtBExprNode(t.getType(), t, (AssrtBFormula) res);
+			return new AssrtStateVarAnnotNode(t, new AssrtStateVarDeclList(t), new AssrtBExprNode(t.getType(), t, (AssrtBFormula) res));
+					// Cf. adaptor.addChild(root_0, new AssrtBExprNode(EXTID, t, AssertionsParser.parseAssertion((t!=null?t.getText():null))));
+					// i.e., EXTID, t, ...
+		}
+		/*else
+		{
+			return new Ass
+		}*/
+	}
+
+	/*public static AssrtStateVarAnnotNode parseStateVarAnnot(String source) 
+			throws RecognitionException
+	{
+		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
+		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
+		AssertionsParser parser = new AssertionsParser(
+				new CommonTokenStream(lexer));
+		CommonTree res = (CommonTree) parser.annot_statevardecls().getTree();
+		AssrtStateVarAnnotNode n = new AssrtStateVarAnnotNode(res.getToken());
+		//n.addScribChildren(...);
+		return n;
+	}*/
+
+	public static CommonTree parseStateVarArgList(String source) throws RecognitionException
+	{
+		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
+		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
+		AssertionsParser parser = new AssertionsParser(new CommonTokenStream(lexer));
+		return (CommonTree) parser.statevararglist().getTree();
+	}
+//*/
 }
+
 
 
 // Not referred to explicitly, deals with whitespace implicitly (don't delete this)
@@ -153,7 +252,8 @@ num:
 ; 
 
 	
-root:  // Seems mandatory?
+
+root:  // Seems mandatory?  For top-level Tree?
 	bool_root -> bool_root
 ;
 
@@ -259,89 +359,140 @@ unint_fun_arg_list:
 ;
 */
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
-/*
-	public static AssrtStateVarAnnotNode parseStateVarAnnot(String source) 
-			throws RecognitionException
-	{
-		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
-		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
-		AssertionsParser parser = new AssertionsParser(
-				new CommonTokenStream(lexer));
-		CommonTree res = (CommonTree) parser.annot_statevardecls().getTree();
-		AssrtStateVarAnnotNode n = new AssrtStateVarAnnotNode(res.getToken());
-		//n.addScribChildren(...);
-		return n;
-	}
-
-	public static CommonTree parseStateVarDeclList(String source) 
-			throws RecognitionException
-	{
-		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
-		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
-		AssertionsParser parser = new AssertionsParser(
-				new CommonTokenStream(lexer));
-		return (CommonTree) parser.statevardecllist().getTree();
-	}
-
-	public static CommonTree parseStateVarArgList(String source) throws RecognitionException
-	{
-		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
-		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
-		AssertionsParser parser = new AssertionsParser(new CommonTokenStream(lexer));
-		return (CommonTree) parser.statevararglist().getTree();
-	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 // statevars -- TODO: refactor to AssrtScribble.g -- no: it's all inside the EXTID annot -- but: doesn't have to be...
-	
-annot_statevardecls: statevardecllist EOF;
-	
+
+//*	
+//annot_statevardecls: statevardecllist EOF;
+
 statevardecllist:
-/*	'<' statevardecl (',' statevardecl)* '>'
+	bool_expr
 ->
-	^(ASSRT_STATEVARDECLLIST ^(ASSRT_EMPTYASS) statevardecl+)* /
+	//^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECLLISTASSERTION bool_expr))
+	//^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECLLISTASSERTION {new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1),   // https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
+					//(AssrtBFormula) AssrtAntlrToFormulaParser .getInstance().parse((CommonTree) $bool_expr.tree))}))
+	^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECL_LIST) {new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1),   // https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
+					(AssrtBFormula) AssrtAntlrToFormulaParser .getInstance().parse((CommonTree) $bool_expr.tree))})
+
+	//^(ASSRT_STATEVARANNOT {AssertionsParser.parseAssertion((CommonTree) $bool_expr.tree)})
+	//^(ASSRT_STATEVARANNOT {AssertionsParser.parseAssertion($bool_root.tree)})
+	//^(ASSRT_STATEVARANNOT bool_expr)
+	//^(ASSRT_STATEVARANNOT {new AssrtBExprNode($t.type, $t.token, (AssrtBFormula) AssertionsParser.parseAssertion((CommonTree) $bool_expr.tree))})
+	//^(ASSRT_STATEVARANNOT ^(ASSRT_STATEVARDECLLISTASSERTION {AssertionsParser.parseAssertion((CommonTree) $bool_expr.tree)}))
+	//bool_expr
+	/*
+|
+	'<' statevardecl (',' statevardecl)* '>'
+->
+	//^(ASSRT_STATEVARDECL_LIST ^(ASSRT_EMPTYASS) statevardecl+)
+	^(ASSRT_STATEVARANNOTNODE ^(ASSRT_EMPTYASS) statevardecl+)
+	/*
 |
 	'<' statevardecl (',' statevardecl)* '>' bool_expr?
 ->
-	^(ASSRT_STATEVARDECLLIST ^(ASSRT_STATEVARDECLLISTASSERTION bool_expr?) statevardecl+)
-|
-	bool_expr
-->
-	^(ASSRT_STATEVARDECLLIST ^(ASSRT_STATEVARDECLLISTASSERTION bool_expr)) 
+	^(ASSRT_STATEVARDECL_LIST ^(ASSRT_STATEVARDECLLISTASSERTION bool_expr?) statevardecl+)
 ;
 	
 statevardecl:
 	variable ':=' arith_expr
 ->
 	^(ASSRT_STATEVARDECL variable arith_expr)
+	*/
+|
+	assrt_statevardecls bool_expr_opt?
+->
+	^(ASSRT_STATEVARANNOTNODE assrt_statevardecls 
+			//{new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtBFormula) AssrtAntlrToFormulaParser .getInstance().parse((CommonTree) $bool_expr.tree))}
+			bool_expr_opt?
+	)
+;
+
+bool_expr_opt:
+bool_expr
+->{new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1),
+					(AssrtBFormula) AssrtAntlrToFormulaParser .getInstance().parse((CommonTree) $bool_expr.tree))}
+;
+
+assrt_statevardecls:
+	'<' assrt_statevardecl (',' assrt_statevardecl)* '>'
+->
+	^(ASSRT_STATEVARDECL_LIST assrt_statevardecl+)
+;
+
+assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
+
+assrt_statevardecl:
+	assrt_intvarname ':=' arith_expr
+->
+	^(ASSRT_STATEVARDECL assrt_intvarname
+			//EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
+			{new AssrtAExprNode(input.LT(-1).getType(), input.LT(-1),   // https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
+					(AssrtAFormula) AssrtAntlrToFormulaParser
+				.getInstance().parse((CommonTree) $arith_expr.tree))}
+			)
 ;
 	
-statevararglist:
+/*statevararglist:
 	'<' arith_expr (',' arith_expr)* '>'
 ->
 	^(ASSRT_STATEVARARGLIST arith_expr+)
 ;
 //*/
+
+assrt_statevarargs:
+	'<' assrt_statevararg (',' assrt_statevararg)* '>'
+->
+	^(ASSRT_... assrt_statevararg+)  // HERE statevararglist
+;
+
+// TODO: refactor with assrt_statevardecl
+assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple names (for ID)
+	id=EXTID
+->
+	EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
+;
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 	
