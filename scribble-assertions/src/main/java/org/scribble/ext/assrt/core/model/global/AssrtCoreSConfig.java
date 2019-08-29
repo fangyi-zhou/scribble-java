@@ -1179,7 +1179,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					"[assrt-core] [TODO] " + cast.getClass() + ":\n\t" + cast);
 		}
 		AssrtEState succ = curr.getDetSucc(cast);
-		AssrtBFormula sass = succ.getAssertion();	
+		AssrtBFormula sass = succ.getAssertion().squash();
 		if (sass.equals(AssrtTrueFormula.TRUE))
 		{
 			return AssrtTrueFormula.TRUE;

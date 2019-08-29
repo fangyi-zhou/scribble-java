@@ -74,7 +74,7 @@ public class AssrtCoreEGraphBuilder extends EGraphBuilder
 			AssrtCoreLActionKind k = lc.getKind();
 			lc.cases.entrySet().stream().forEach(e ->
 			buildEdgeAndContinuation(s1, s2, recs, lc.role, k, e.getKey(),
-					e.getValue())			);
+					e.getValue()));
 		}
 		else if (lt instanceof AssrtCoreLRec)
 		{

@@ -174,19 +174,21 @@ type <dotnet> "System.UInt32" from "..." as int;
 global protocol Proto1(role A, role B)
 {
 	1() from A to B;
-	do Proto1Aux(A, B); @"<0>"
+	do Proto1Aux(A, B); @"<0>"  // FIXME: keep in action (f/w rec)
 }
 
-aux global protocol Proto1Aux(role A, role B) @"<x:=0> x<5"
+// TODO: test f/w rec with a state assertion
+
+aux global protocol Proto1Aux(role A, role B) @"<x:=0>"
 {
 	choice at A
 	{
-		1() from A to B; @"x<5"
+		2() from A to B; @"x<5"
 		do Proto1Aux(A, B); @"<x+1>"
 	}	
 	or
 	{
-		2() from A to B; @"x>=5"  
+		3() from A to B; @"x>=5"  
 	}
 }
 
