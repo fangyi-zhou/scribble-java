@@ -1,5 +1,6 @@
 package org.scribble.ext.assrt.ast.global;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.antlr.runtime.Token;
@@ -20,7 +21,7 @@ import org.scribble.visit.AstVisitor;
 // Cf. AssrtGContinue
 public class AssrtGDo extends GDo implements AssrtStateVarArgNode
 {
-	public static final int STATEVAREXPR_CHILDREN_START_INDEX = 3;
+	public static final int STATEVAR_ARG_LIST_CHILD_INDEX = 3;  // null if none
 
 	// ScribTreeAdaptor#create constructor
 	public AssrtGDo(Token t)
@@ -36,7 +37,7 @@ public class AssrtGDo extends GDo implements AssrtStateVarArgNode
 
 	public AssrtStateVarArgList getStateVarArgListChild()
 	{
-		return (AssrtStateVarArgList) getChild(STATEVAREXPR_CHILDREN_START_INDEX);
+		return (AssrtStateVarArgList) getChild(STATEVAR_ARG_LIST_CHILD_INDEX);
 	}
 
 	@Override
@@ -46,13 +47,15 @@ public class AssrtGDo extends GDo implements AssrtStateVarArgNode
 				.getChildren();
 		return cs.stream()
 				.map(x -> (AssrtAExprNode) x).collect(Collectors.toList());*/
-		return getStateVarArgListChild().getAnnotExprChildren();
+		AssrtStateVarArgList sexprs = getStateVarArgListChild();
+		return sexprs == null ? Collections.emptyList()
+				: sexprs.getAnnotExprChildren();
 	}
 
 	// "add", not "set"
 	public void addScribChildren(ProtoNameNode<Global> proto, NonRoleArgList as,
 			RoleArgList rs, //List<AssrtAExprNode> sexprs)
-			AssrtStateVarArgList sexprs)
+			AssrtStateVarArgList sexprs)  // May be null
 	{
 		// Cf. above getters and Scribble.g children order
 		super.addScribChildren(proto, as, rs);
@@ -74,7 +77,7 @@ public class AssrtGDo extends GDo implements AssrtStateVarArgNode
 
 	public AssrtGDo reconstruct(ProtoNameNode<Global> proto, RoleArgList rs,
 			NonRoleArgList as, //List<AssrtAExprNode> sexprs)
-			AssrtStateVarArgList sexprs)
+			AssrtStateVarArgList sexprs)  // May be null
 	{
 		AssrtGDo dup = dupNode();
 		dup.addScribChildren(proto, as, rs, sexprs);
@@ -90,16 +93,20 @@ public class AssrtGDo extends GDo implements AssrtStateVarArgNode
 		RoleArgList rs = (RoleArgList) visitChild(getRoleListChild(), v);
 		NonRoleArgList as = (NonRoleArgList) visitChild(getNonRoleListChild(), v);
 		//List<AssrtAExprNode> sexprs = visitChildListWithClassEqualityCheck(this, getAnnotExprChildren(), v);  // Supports empty list
-		AssrtStateVarArgList sexprs = (AssrtStateVarArgList) visitChild(
-				getStateVarArgListChild(), v);
+		AssrtStateVarArgList sexprs = getStateVarArgListChild();
+		if (sexprs != null)
+		{
+			sexprs = (AssrtStateVarArgList) visitChild(sexprs, v);
+		}
 		return reconstruct(proto, rs, as, sexprs);
 	}
 
 	@Override
 	public String toString()
 	{
+		AssrtStateVarArgList sexprs = getStateVarArgListChild();
 		return super.toString() //+ annotToString();
-				+ getStateVarArgListChild();
+				+ (sexprs != null ? sexprs : "");
 	}
 }
 
