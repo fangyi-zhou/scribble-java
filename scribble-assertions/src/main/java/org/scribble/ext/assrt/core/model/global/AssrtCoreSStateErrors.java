@@ -59,24 +59,21 @@ public class AssrtCoreSStateErrors extends SStateErrors
 		this.assunsat = Collections
 				.unmodifiableMap(cfg.getAssertUnsatErrors(core, fullname));
 
-		if (this.state.id == init.id)
-		{
-			this.initrecass = cfg.getInitRecAssertErrors(core, fullname);
-			this.recass = Collections.emptyMap();
-		}
-		else
-		{
-			this.initrecass = Collections.emptyMap();
-			this.recass = Collections.
-					unmodifiableMap(cfg.getRecAssertErrors(core, fullname));
-		}
+		// N.B. special case treatment of statevar init exprs and "constants" deprecated from model building
+		// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + (e.g.) loop counting
+		this.initrecass = (this.state.id == init.id)
+				? cfg.getInitRecAssertErrors(core, fullname)
+				: Collections.emptyMap();
+		this.recass = Collections
+				.unmodifiableMap(cfg.getRecAssertErrors(core, fullname));
 	}
 	
 	@Override
 	public boolean isEmpty()
 	{
 		return super.isEmpty() && this.unknown.isEmpty() && this.assprog.isEmpty()
-				&& this.assunsat.isEmpty() && this.recass.isEmpty();
+				&& this.assunsat.isEmpty() && this.initrecass.isEmpty()
+				&& this.recass.isEmpty();
 	}
 
 	@Override
@@ -105,6 +102,11 @@ public class AssrtCoreSStateErrors extends SStateErrors
 		if (!this.assunsat.isEmpty())
 		{
 			res += "\n    Unsatisfiable assertions: " + this.assunsat;
+		}
+		if (!this.initrecass.isEmpty())
+		{
+			res += "\n    Initial state recursion-assertion errors: "
+					+ this.initrecass;
 		}
 		if (!this.recass.isEmpty())
 		{

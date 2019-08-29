@@ -11,4 +11,7 @@ public abstract class AssrtAFormula extends AssrtSmtFormula<IntegerFormula>
 	@Override
 	public abstract AssrtAFormula subs(AssrtIntVarFormula old, 
 			AssrtIntVarFormula neu);
+
+	// i.e., does not contain any AssrtIntVarFormula
+	public abstract boolean isConstant();
 }

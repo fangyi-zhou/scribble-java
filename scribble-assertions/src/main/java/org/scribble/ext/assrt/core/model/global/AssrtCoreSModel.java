@@ -56,9 +56,12 @@ public class AssrtCoreSModel extends SModel
 										.getAssertSatChecks(this.core, fullname).stream())
 								.collect(Collectors.toSet()));
 				fs.addAll(
+						((AssrtCoreSConfig) this.graph.init.config)
+								.getInitRecAssertChecks(this.core, fullname));
+				fs.addAll(
 						all.stream().flatMap(s -> ((AssrtCoreSConfig) s.config)
-								.getRecAssertChecks(this.core, fullname,
-										s.id == this.graph.init.id)
+								.getRecAssertChecks(this.core, fullname)
+								//s.id == this.graph.init.id)
 								.stream())
 								.collect(Collectors.toSet()));
 				/*String smt2 = fs.stream().filter(f -> !f.equals(AssrtTrueFormula.TRUE))
@@ -71,6 +74,11 @@ public class AssrtCoreSModel extends SModel
 				{
 					return new TreeMap<>();
 				}
+				/*else
+				{
+					System.out.println("aaaa: " + fs);
+					System.exit(1);
+				}*/
 			}
 		}
 

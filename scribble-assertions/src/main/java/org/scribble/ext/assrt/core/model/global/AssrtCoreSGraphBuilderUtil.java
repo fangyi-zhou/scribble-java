@@ -15,9 +15,13 @@ import org.scribble.core.model.global.SSingleBuffers;
 import org.scribble.core.type.name.Role;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
+import org.scribble.ext.assrt.core.type.formula.AssrtFormulaFactory;
+import org.scribble.ext.assrt.core.type.formula.AssrtIntVarFormula;
+import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.model.endpoint.AssrtEState;
+import org.sosy_lab.java_smt.api.Formula;
 
 public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 {
@@ -35,43 +39,11 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toFsm()));
 		SSingleBuffers Q = new AssrtCoreSSingleBuffers(P.keySet(), !explicit);  // TODO: refactor queues creation via modelfactory (cf. super)
 		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q,
-				makeR(P), makeRass(P), makeK(P.keySet()), makeF(P)
+				makeK(P.keySet()), makeF(P),
 				//P.keySet().stream().collect(Collectors.toMap(r -> r, r -> new HashMap<>()))
-				//makeScopes(P)
+				//makeScopes(P), 
+				makeV(P), makeR(P)
 				);
-	}
-
-	// TODO: EFsm -> EGraph
-	private static Map<Role, Map<AssrtIntVar, AssrtAFormula>> makeR(
-			Map<Role, EFsm> P)
-	{
-		Map<Role, Map<AssrtIntVar, AssrtAFormula>> R = P.entrySet()
-				.stream().collect(Collectors.toMap(Entry::getKey, e -> new HashMap<>(
-						((AssrtEState) e.getValue().graph.init).getStateVars())));
-		/*Map<Role, Map<AssrtDataTypeVar, AssrtArithFormula>> R = P.keySet().stream().collect(Collectors.toMap(r -> r, r ->
-				Stream.of(false).collect(Collectors.toMap(
-						x -> AssrtCoreESend.DUMMY_VAR,
-						x -> AssrtCoreESend.ZERO))
-			));*/
-		return R;
-	}
-	
-	private static Map<Role, Set<AssrtBFormula>> makeRass(Map<Role, EFsm> P)
-	{
-		return P.entrySet().stream().collect(Collectors.toMap(
-				Entry::getKey,
-				x ->
-				{
-					Set<AssrtBFormula> set = new HashSet<>();
-						AssrtBFormula ass = ((AssrtEState) x.getValue().graph.init)
-								.getAssertion();
-						if (!ass.equals(AssrtTrueFormula.TRUE))
-					{
-						set.add(ass);
-					}
-					return set;
-				}
-		));
 	}
 
 	private static Map<Role, Set<AssrtIntVar>> makeK(Set<Role> rs)
@@ -92,14 +64,73 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 								AssrtFormulaFactory.AssrtIntVar(b.getKey().toString()),
 								b.getValue()))
 						.collect(Collectors.toSet())*/
-				x -> new HashSet<>()
-		));
+				x -> new HashSet<>()));
 	}
-	
+
 	/*private static Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> 
 			makeScopes(Map<Role, EFsm> P)
 	{
 		return P.entrySet().stream()
 				.collect(Collectors.toMap(Entry::getKey, x -> new LinkedHashMap<>()));
 	}*/
+
+	// TODO: EFsm -> EGraph
+	private static Map<Role, Map<AssrtIntVar, AssrtAFormula>> makeV(
+			Map<Role, EFsm> P)
+	{
+		Map<Role, Map<AssrtIntVar, AssrtAFormula>> R = P.entrySet()
+				.stream().collect(Collectors.toMap(Entry::getKey, e -> new HashMap<>(
+						//((AssrtEState) e.getValue().graph.init).getStateVars() // Deprecating special case treatment of statevar init exprs and "constants"
+						((AssrtEState) e.getValue().graph.init).getStateVars()
+								.entrySet().stream().collect(Collectors.toMap(Entry::getKey,
+									x -> renameIntVarAsFormula(x.getKey())))
+						)));
+		/*Map<Role, Map<AssrtDataTypeVar, AssrtArithFormula>> R = P.keySet().stream().collect(Collectors.toMap(r -> r, r ->
+				Stream.of(false).collect(Collectors.toMap(
+						x -> AssrtCoreESend.DUMMY_VAR,
+						x -> AssrtCoreESend.ZERO))
+			));*/
+		return R;
+	}
+
+	private static Map<Role, Set<AssrtBFormula>> makeR(Map<Role, EFsm> P)
+	{
+		return P.entrySet().stream().collect(Collectors.toMap(
+				Entry::getKey,
+				x ->
+				{
+					Set<AssrtBFormula> set = new HashSet<>();
+						AssrtBFormula ass = ((AssrtEState) x.getValue().graph.init)
+								.getAssertion();
+						if (!ass.equals(AssrtTrueFormula.TRUE))
+					{
+						set.add(ass);
+					}
+					return set;
+				}
+		));
+	}
+
+	/* Static helpers */
+
+	public static <T extends Formula> AssrtSmtFormula<T> renameFormula(
+			AssrtSmtFormula<T> f)
+	{
+		for (AssrtIntVar v : f.getIntVars())
+		{
+			AssrtIntVarFormula old = AssrtFormulaFactory.AssrtIntVar(v.toString());  // N.B. making *Formula*
+			AssrtIntVarFormula fresh = AssrtFormulaFactory
+					.AssrtIntVar("_" + v.toString());  // HACK
+			f = f.subs(old, fresh);  // N.B., works on Formulas
+		}
+		return f;
+	}
+
+	// "x" -> "_x" -- IntVar is a name, translating to a "fresh" formula
+	public static AssrtIntVarFormula renameIntVarAsFormula(AssrtIntVar svar)
+	{
+		return (AssrtIntVarFormula) renameFormula(
+				AssrtFormulaFactory.AssrtIntVar(//"_" + 
+						svar.toString()));
+	}
 }

@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -28,6 +27,7 @@ import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.PayElemType;
 import org.scribble.core.type.name.Role;
 import org.scribble.ext.assrt.core.job.AssrtCore;
+import org.scribble.ext.assrt.core.lang.local.AssrtCoreLProjection;
 import org.scribble.ext.assrt.core.model.endpoint.AssrtCoreEModelFactory;
 import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreEAcc;
 import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreEAction;
@@ -39,14 +39,11 @@ import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinCompFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtFormulaFactory;
-import org.scribble.ext.assrt.core.type.formula.AssrtIntValFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtIntVarFormula;
-import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.model.endpoint.AssrtEState;
-import org.sosy_lab.java_smt.api.Formula;
 
 			
 public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
@@ -203,9 +200,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		updateOutput(self, a, succ, K, F, V, R); //rename, scopes);
 		//updateR(R, self, es);
 
-		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, V,
-				R, K, F //rename scopes
-				);
+		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, K,
+				F, V, R); //rename scopes, 
 	}
 
   // CHECKME: only need to update self entries of Maps -- almost: except for addAnnotOpensToF, and some renaming via Streams
@@ -293,15 +289,17 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			//boolean isEntry = aexprs.isEmpty() && !svars.isEmpty();  
 			boolean isContinue = !aexprs.isEmpty();
 					// Rec-entry: expr args already inlined into the rec statevars (i.e., by proto inlining) -- CHECKME: means "forwards entry?" robust?  refactor?
+			// FIXME: now always true, cf. AssrtCoreEGraphBuiler.buildEdgeAndContinuation AssrtCoreLRec `cont` f/w-rec case
 
 			Iterator<AssrtAFormula> i = aexprs.iterator();
 			for (Entry<AssrtIntVar, AssrtAFormula> e : svars.entrySet())
 			{
 				AssrtIntVar svar = e.getKey();
 				AssrtAFormula sexpr = null;
-				if (aexprs.isEmpty())
+				if (aexprs.isEmpty())  // "Init" state var expr -- must be a "constant"
 				{
-					sexpr = e.getValue();  // "Init" state var expr
+					//sexpr = e.getValue();
+					sexpr = AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
 				}
 				else
 				{
@@ -311,6 +309,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 									.anyMatch(x -> x.toString().equals(next.toString())) // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g -- no: broken, get `y=y`
 							? next  // A "direct" equality to a state var can be left "unerased" without increasing the overall state space -- no: e.g., do Fib <y, z1>, `x=y` where (old) `y` unerased conflicts with `y=z1`
 											: (AssrtAFormula) renameFormula(next);*/
+					/* // Deprecated special case treatment of statevar init exprs and "constant propagation" (and constants) from model building
 					if (next instanceof AssrtIntVarFormula)
 					{
 						Optional<AssrtIntValFormula> con = isConst(Vself_orig,
@@ -323,11 +322,24 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					if (sexpr == null)
 					{
 						sexpr = (AssrtAFormula) renameFormula(next);
+					}*/
+					if (next.isConstant())
+					// Deprecated special case treatment of statevar init exprs and "constant propagation" from model building
+					// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
+					{
+						sexpr = //makeFreshIntVar(new AssrtIntVar("__z"));  // TODO: factor out
+								AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
+					}
+					else
+					{
+						sexpr = (AssrtAFormula) AssrtCoreSGraphBuilderUtil
+								.renameFormula(next);
 					}
 				}
 				if (isContinue   // CHECKME: "shadowing", e.g., forwards statevar has same name as a previous
-						&& !((sexpr instanceof AssrtIntVarFormula)  // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g
-							&& sexpr.toString().equals(svar.toString())))
+				/*&& !((sexpr instanceof AssrtIntVarFormula)  // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g
+					&& sexpr.toString().equals(svar.toString()))*/  // Now disabled, related to deprecating special case treatment of state var init exprs and "constants" from model building
+				)
 					{
 						gcVR(Vself, Rself, svar);  // GC V , sexpr may be different than that removed
 						gcF(Fself, svar);
@@ -340,7 +352,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		}
 	}
 
-	private Optional<AssrtIntValFormula> isConst(
+	/*private Optional<AssrtIntValFormula> isConst(
 			Map<AssrtIntVar, AssrtAFormula> Vself_orig, AssrtIntVarFormula next,
 			Set<AssrtIntVarFormula> seen)
 	{
@@ -365,7 +377,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			}
 		}
 		return Optional.empty();
-	}
+	}*/
 	
 	private void gcF(Set<AssrtBFormula> Fself, AssrtIntVar v) 
 	{
@@ -392,19 +404,6 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		}
 	}
 
-	private static <T extends Formula> AssrtSmtFormula<T>
-			renameFormula(AssrtSmtFormula<T> f)
-	{
-		for (AssrtIntVar v : f.getIntVars())
-		{
-			AssrtIntVarFormula old = AssrtFormulaFactory.AssrtIntVar(v.toString());  // N.B. making *Formula*
-			AssrtIntVarFormula fresh = AssrtFormulaFactory
-					.AssrtIntVar("_" + v.toString());  // HACK
-			f = f.subs(old, fresh);  // N.B., works on Formulas
-		}
-		return f;
-	}
-	
 	private static void compactF(Set<AssrtBFormula> Fself)
 	{
 		Iterator<AssrtBFormula> i = Fself.iterator();
@@ -443,8 +442,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				);
 		//updateR(R, self, es);
 
-		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, V,
-				R, K, F//, rename scopes
+		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, K,
+				F, V, R
+		//, rename scopes
 				);
 	}
 
@@ -1039,23 +1039,30 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	protected AssrtBFormula getInitRecAssertCheck(AssrtCore core,
 			GProtoName fullname, Role self, AssrtEState curr)
 	{
-		AssrtBFormula toCheck = curr.getAssertion();
+		AssrtBFormula toCheck = curr.getAssertion().squash();
 		if (toCheck.equals(AssrtTrueFormula.TRUE))
 		{
 			return AssrtTrueFormula.TRUE;
 		}
 		
+		AssrtCoreLProjection proj = (AssrtCoreLProjection) core.getContext()
+				.getProjectedInlined(fullname, self);
+		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = proj.statevars;
 		Map<AssrtIntVar, AssrtAFormula> Vself = this.V.get(self);
 		if (!Vself.isEmpty())
 		{
 			AssrtBFormula Vconj = Vself.entrySet().stream().map(x -> (AssrtBFormula)  // Cast needed
 					AssrtFormulaFactory.AssrtBinComp(AssrtBinCompFormula.Op.Eq,
-							AssrtFormulaFactory.AssrtIntVar(x.getKey().toString()), x.getValue()))
-							// Currently allowing recurison-assertion without any statevardecls (i.e., cannot use any vars), but pointless?
+					AssrtFormulaFactory.AssrtIntVar(x.getKey().toString()), //x.getValue()
+					svars.get(x.getKey())))
+					// Special case treatment of statevar init exprs and "constants" deprecated from model building
+					// So have to look up init exprs "manually"
+					// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + (e.g.) loop counting
 					.reduce((b1, b2) -> AssrtFormulaFactory
 							.AssrtBinBool(AssrtBinBFormula.Op.And, b1, b2))
 							// do-statevar expr args for "forwards" rec already inlined into rec-statevars
 					.get();
+			// Currently allowing rec-assertion without any statevardecls (i.e., cannot use any vars), but pointless?
 			toCheck = AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.Imply,
 					Vconj, toCheck);
 		}
@@ -1064,24 +1071,26 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	}			
 
 	// For batching
-	public Set<AssrtBFormula> getRecAssertChecks(AssrtCore core,
-			GProtoName fullname, boolean isInit)
+	public Set<AssrtBFormula> getInitRecAssertChecks(AssrtCore core,
+			GProtoName fullname)
 	{
-		if (isInit)
+		//if (isInit)
 		{
 			return this.P.entrySet().stream().map(e ->  // anyMatch is on the endpoints (not actions)
 			getInitRecAssertCheck(core, fullname, e.getKey(),
 					(AssrtEState) e.getValue().curr)
 			).collect(Collectors.toSet());
 		}
-		else
-		{
-			return this.P.entrySet().stream().flatMap(e ->  // anyMatch is on the endpoints (not actions)
-			e.getValue().curr.getActions().stream()
-					.map(a -> getRecAssertCheck(core, fullname, e.getKey(),
-							(AssrtEState) e.getValue().curr, (AssrtCoreEAction) a))
-			).collect(Collectors.toSet());
-		}
+	}
+
+	public Set<AssrtBFormula> getRecAssertChecks(AssrtCore core,
+			GProtoName fullname)
+	{
+		return this.P.entrySet().stream().flatMap(e ->  // anyMatch is on the endpoints (not actions)
+		e.getValue().curr.getActions().stream()
+				.map(a -> getRecAssertCheck(core, fullname, e.getKey(),
+						(AssrtEState) e.getValue().curr, (AssrtCoreEAction) a)))
+				.collect(Collectors.toSet());
 	}
 
 	// Pre: stuckMessages checked
@@ -1165,14 +1174,15 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		EAction cast = (EAction) a;
 		if (cast.isReceive() || cast.isAccept())
 		{
-			/*// Now redundant, checked by getRecAssertErrors
-			// CHECKME: "skip" if no msg avail (because assertion carried by msg)? -- what is an example?
+			/*// Now redundant, checked by getRecAssertErrors -- no?
+			// CHECKME: "skip" if no msg avail (because assertion carried by msg? -- no)
+			// ^what is an example? -- due to async, e.g., input-side rec-assert checked twice w.r.t. state that does peer output (no message yet) and actual input state (message arrived)*/
 			if (!this.Q.isConnected(self, ((EAction) a).peer)
 					|| this.Q.getQueue(self).get(cast.peer) == null)
 				 // !isPendingRequest(a.peer, self))  // TODO: open/port annots
 			{
 				return AssrtTrueFormula.TRUE;
-			}*/
+			}
 		}
 		else if (!(cast.isSend() || cast.isRequest()))
 		{
@@ -1180,7 +1190,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					"[assrt-core] [TODO] " + cast.getClass() + ":\n\t" + cast);
 		}
 		AssrtEState succ = curr.getDetSucc(cast);
-		AssrtBFormula sass = succ.getAssertion();	
+		AssrtBFormula sass = succ.getAssertion().squash();
 		if (sass.equals(AssrtTrueFormula.TRUE))
 		{
 			return AssrtTrueFormula.TRUE;
@@ -1228,9 +1238,23 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					? aass
 					: AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, lhs, aass);
 		}
+
+		Set<AssrtBFormula> Rself = this.R.get(self);
+		if (!Rself.isEmpty())
+		{
+			AssrtBFormula rtmp = Rself.stream().reduce(
+					(x1, x2) -> AssrtFormulaFactory
+							.AssrtBinBool(AssrtBinBFormula.Op.And, x1, x2))
+					.get();
+			lhs = (lhs == null)
+					? rtmp
+					: AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, lhs,
+							rtmp);
+		}
 			
 		List<AssrtAFormula> aexprs = a.getStateExprs();
 		if (aexprs.isEmpty())  // "Forwards" rec entry -- cf. updateForAssertionAndStateExprs, updateRecEntry/Continue
+		// FIXME: now obsolete, cf. AssrtCoreEGraphBuiler.buildEdgeAndContinuation AssrtCoreLRec `cont` f/w-rec case
 		{
 			// Next for lhs, state var eq-terms for initial rec entry
 			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = succ.getStateVars();
@@ -1264,23 +1288,29 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		else  // Rec-continue
 		{
 			// Next for lhs, rec ass (on original vars)  // e.g., lhs, ...x > 0... (for existing x) => exists ...x' > 0... (for new x')
-			if (!sass.equals(AssrtTrueFormula.TRUE))
+			/*if (!sass.equals(AssrtTrueFormula.TRUE))
 			{
 				lhs = AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, lhs,
 						sass);
+			}*/
+			if (lhs == null)
+			{
+				lhs = AssrtTrueFormula.TRUE;
 			}
 
 			// rhs = existing R assertions -- CHECKME: why not just target rec ass again? (like entry)  or why entry does not check this.R and new entry ass -- i.e., why rec entry/continue not uniform?
 					// ^FIXME: should not be existing or just entry -- should be all existing up to entry ?
-			Set<AssrtBFormula> Rself = this.R.get(self);   
+			//Set<AssrtBFormula> Rself = this.R.get(self);   
 					// Can use this.R because recursing, should already have all the terms to check (R added on f/w rec-entry updateRecEntry)
 					// CHECKME: should it be *all* the terms so far? yes, because treating recursion assertions as invariants?
 			//if (!Rself.isEmpty())
-			AssrtBFormula rhs = Rself.stream().reduce(AssrtTrueFormula.TRUE,  // "identity-reduce" variant convenient here for below test
+			/*AssrtBFormula rhs = Rself.stream().reduce(//AssrtTrueFormula.TRUE,  // "identity-reduce" variant convenient here for below test
+					sass,
 					(x1, x2) -> AssrtFormulaFactory
 							.AssrtBinBool(AssrtBinBFormula.Op.And, x1, x2));
 					// CHECKME: do check, even if AA is True?  To check state var update isn't a contradiction?
-					// FIXME: that won't be checked by this, lhs just becomes false -- this should be checked by unsat? (but that is only poly choices)
+					// FIXME: that won't be checked by this, lhs just becomes false -- this should be checked by unsat? (but that is only poly choices)*/
+			AssrtBFormula rhs = sass;
 			if (rhs.equals(AssrtTrueFormula.TRUE))
 			{
 				return AssrtTrueFormula.TRUE;  // CHECKME: move "shortcircuit" to top?
@@ -1462,7 +1492,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 
 	private static AssrtIntVarFormula makeFreshIntVar(AssrtIntVar var)
 	{
-		return AssrtFormulaFactory.AssrtIntVar("_" + var.toString() + counter++);  // HACK
+		return AssrtFormulaFactory
+				.AssrtIntVar("_" + var.toString() + AssrtCoreSConfig.counter++);  // HACK
 	}
 
 	private static AssrtBFormula forallQuantifyFreeVars(AssrtCore core,

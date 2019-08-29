@@ -39,11 +39,12 @@ public interface AssrtCoreSModelFactory extends SModelFactory
 
 
 	AssrtCoreSConfig AssrtCoreSConfig(Map<Role, EFsm> P, SSingleBuffers Q,
-			Map<Role, Map<AssrtIntVar, AssrtAFormula>> R,
-			Map<Role, Set<AssrtBFormula>> Rass, Map<Role, Set<AssrtIntVar>> K,
-			Map<Role, Set<AssrtBFormula>> F
+			Map<Role, Set<AssrtIntVar>> K,
+			Map<Role, Set<AssrtBFormula>> F,
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename
-			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes
+			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes, 
+			Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
+			Map<Role, Set<AssrtBFormula>> R
 			);
 	AssrtCoreSModel AssrtCoreSModel(AssrtCore core, AssrtCoreSGraph graph);
 	

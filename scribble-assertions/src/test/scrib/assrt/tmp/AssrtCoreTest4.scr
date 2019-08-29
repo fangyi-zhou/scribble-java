@@ -11,7 +11,7 @@ type <dotnet> "System.UInt32" from "..." as int;
 
 
 //*  // Fibs
-//global protocol Proto1(role A, role B) @<x:="0", y:="1"> "x>=0 && y>x"  // Bad (e.g., x=y=1)
+//global protocol Fib(role A, role B) @"<x:=0, y:=1> x>=0 && y>x"  // Bad (e.g., x=y=1)
 global protocol Fib(role A, role B) @"<x:=0, y:=1> x>=0 && y>=x"
 {
 	1(x1: int) from A to B;	 @"x1=x"

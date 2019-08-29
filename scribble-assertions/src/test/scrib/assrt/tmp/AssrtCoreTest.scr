@@ -171,11 +171,103 @@ type <dotnet> "System.UInt32" from "..." as int;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
-global protocol Proto1(role A, role B) @"True" //@"<x:=0>"
+global protocol Fib(role A, role B)  @"<x := 0, y := 1> y>0 && x>=0"
 {
 	1() from A to B;
-	do Proto1(A, B);
 }
+
+
+/*
+global protocol Proto1(role A, role B) 
+		//@"<x:=0> x>=0"
+		@"<x:=0> x>0"  // Testing revised init-rec-assert check -- TODO: add test
+{
+	1() from A to B;
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B)
+{
+	1() from A to B;
+	do Proto1Aux(A, B);  @"<123>"  // Testing f/w rec statevar expr endpoint graph building
+}
+
+aux global protocol Proto1Aux(role A, role B)  @"<x:=0>"
+{
+	2() from B to A;
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B)
+{
+	1() from A to B;
+	do Proto1Aux(A, B); @"<0>"  // Testing f/w rec statevar expr endpoint graph building
+}
+
+aux global protocol Proto1Aux(role A, role B) @"<x:=0>"
+{
+	choice at A
+	{
+		2() from A to B; @"x<5"
+		do Proto1Aux(A, B); @"<x+1>"
+	}	
+	or
+	{
+		3() from A to B; @"x>=5"  
+	}
+}
+//*/
+
+
+/*
+// testing "f/w rec" with a state assertion
+global protocol Proto1(role A, role B)
+{
+	1() from A to B;
+	do Proto1Aux(A, B); @"<0>"  // Testing f/w rec statevar expr endpoint graph building
+}
+
+aux global protocol Proto1Aux(role A, role B) 
+		//@"<x:=0> x>5"  // TODO: add tests
+		@"<x:=0> x>=0"
+{
+	2() from B to A;
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B) @"<x:=0>"
+{
+	choice at A
+	{
+		1() from A to B; @"x<5"
+		do Proto1(A, B); @"<x+1>"
+	}	
+	or
+	{
+		2() from A to B; @"x>=5"  
+				// Testing unsat after deprecating state var init exprs and "constant propagation"
+				// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
+				//@"x=5"  // Bad assrt-prog
+	}
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B) @"<x:=0> x>1"
+{
+	1() from A to B;
+	//do Proto1(A, B);  @"<x-1>"  // Bad -- CHECKME: add tests?
+	//do Proto1(A, B);  @"<x>" // OK
+	do Proto1(A, B);  @"<x+1>"
+}
+//*/
 
 
 
