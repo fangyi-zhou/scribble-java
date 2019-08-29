@@ -219,7 +219,7 @@ global protocol Knowledge(role A, role B, role C)
 
 
 //*  Cf. Fib.scr
-global protocol Fib(role C, role S)  @<x := "0", y := "1"> "y>0 && x>=0"
+global protocol Fib(role C, role S)  @"<x := 0, y := 1> y>0 && x>=0"
 		//@"(x := 0, y := 1) y>0 && x>0"  // Bad initial Rass (and later unsat)
 		//@"(x := 0, y := 1) (y>0))"
 {
@@ -228,7 +228,7 @@ global protocol Fib(role C, role S)  @<x := "0", y := "1"> "y>0 && x>=0"
 		Val(x1:int) from C to S;  @"x1 = x"
 		Add(y1:int) from C to S;  @"y1 = y"
 		Sum(z:int) from S to C;   @"z = (x1+y1)"
-		do Fib(C, S);          @<"y1", "z">  // FIXME
+		do Fib(C, S);          @"<y1, z>"  // FIXME
 	}
 	or
 	{

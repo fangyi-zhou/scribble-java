@@ -20,7 +20,8 @@ public class AssrtGDoDel extends GDoDel
 		ProtoNameNode<Global> proto = disambProtoNameNode(disamb,
 				doo.getProtoNameChild());  // Doesn't keep the original namenode del
 		return doo.reconstruct(proto, doo.getRoleListChild(),
-				doo.getNonRoleListChild(), doo.getAnnotExprChildren());
+				doo.getNonRoleListChild(), //doo.getAnnotExprChildren());
+				doo.getStateVarArgListChild());
 	}
 }
 

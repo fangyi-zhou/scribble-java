@@ -223,6 +223,7 @@ tokens
   import org.scribble.ext.assrt.ast.AssrtAExprNode;
   import org.scribble.ext.assrt.ast.AssrtBExprNode;
   import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
+  import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 }
 
 
@@ -383,11 +384,13 @@ simplesigname: t=ID -> ^(SIG_NAME ID) ;
 // "References to tokens with rewrite not found on left of -> are imaginary tokens."
 // Inlined moduledecl to make token label work
 module:  // Must be "module" (cf. "assrt_module")
-	t=MODULE_KW modulename ';' importmodule* nonprotodecl* assert_fundecl*  // Assrt  
+  // Assrt  
+	t=MODULE_KW modulename ';' importmodule* nonprotodecl* //assert_fundecl*
 	protodecl* EOF
 ->
 	^(ASSRT_MODULE ^(MODULEDECL modulename) importmodule* nonprotodecl*
-			assert_fundecl* protodecl*)
+			//assrt_fundecl* 
+			protodecl*)
 ;
 // moduledecl: MODULE_KW<ModuleDecl>^ modulename ';'  
 		// "Become root" ^ cannot be on rhs? -- so "manually" rewrite to Scribble AST token types
@@ -397,7 +400,7 @@ module:  // Must be "module" (cf. "assrt_module")
  * Section 3.3 Import Declarations
  */
 importmodule:
-	t=IMPORT_KW modulename (AS_KW alias=simplemodulename)? ';'
+	IMPORT_KW modulename (AS_KW alias=simplemodulename)? ';'
 ->
 	^(IMPORTMODULE modulename $alias?)
 ;
@@ -411,14 +414,14 @@ nonprotodecl:
 
 datadecl:
 	// Deprecate TYPE_KW ?
-	t=TYPE_KW '<' schema=ID '>' extName=EXTID FROM_KW
+	TYPE_KW '<' schema=ID '>' extName=EXTID FROM_KW
 	extSource=EXTID AS_KW alias=simpledataname ';'
 ->
 	// alias first to be uniform with other NameDeclNode (getRawNameNodeChild)
 	^(DATADECL $alias $schema $extName $extSource)
 |
 	// CHECKME: duplicated above, because t=(TYPE_KW | DATA_KW) *sometimes* causes null token NPEs... 
-	t=DATA_KW '<' schema=ID '>' extName=EXTID FROM_KW
+	DATA_KW '<' schema=ID '>' extName=EXTID FROM_KW
 	extSource=EXTID AS_KW alias=simpledataname ';'
 ->
 	// alias first to be uniform with other NameDeclNode (getRawNameNodeChild)
@@ -426,7 +429,7 @@ datadecl:
 ;
 
 sigdecl:
-	t=SIG_KW '<' schema=ID '>' extName=EXTID FROM_KW extSource=EXTID AS_KW
+	SIG_KW '<' schema=ID '>' extName=EXTID FROM_KW extSource=EXTID AS_KW
 	alias=simplesigname ';'
 ->
 	// alias first to be uniform with other NameDeclNode (getRawNameNodeChild)
@@ -434,11 +437,11 @@ sigdecl:
 ;
 
 
-// Assrt  // Currently "deprecated"
-assert_fundecl:
+/*// Assrt  // Currently "deprecated"
+assrt_fundecl:
 	ASSERT_KW ID unintfunarglist simpledataname '=' EXTID ';'
-/*->
-	^(...)  // TODO*/
+//->
+//	^(...)  // TODO
 ;
 
 unintfunarglist:
@@ -451,7 +454,7 @@ unintfunarg:
 	assrt_intvarname ':' simpledataname
 -> 
 	^(ASSRT_UNINTFUNARG assrt_intvarname simpledataname)
-;
+;*/
 
 
 /**
@@ -512,9 +515,9 @@ gprotodecl:
 // "aux" must come before "explicit"
 protomods:
                        -> ^(PROTOMOD_LIST)
-| t=AUX_KW             -> ^(PROTOMOD_LIST AUX_KW)
-| t=AUX_KW EXPLICIT_KW -> ^(PROTOMOD_LIST AUX_KW EXPLICIT_KW)
-| t=EXPLICIT_KW        -> ^(PROTOMOD_LIST EXPLICIT_KW)
+| AUX_KW             -> ^(PROTOMOD_LIST AUX_KW)
+| AUX_KW EXPLICIT_KW -> ^(PROTOMOD_LIST AUX_KW EXPLICIT_KW)
+| EXPLICIT_KW        -> ^(PROTOMOD_LIST EXPLICIT_KW)
 ;
 
 // N.B. intermed translation uses full proto name
@@ -527,80 +530,42 @@ assrt_gprotoheader:
 
 // Assrt
 |
-	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' assrt_statevardecls 
-			assrt_statevarassrt? 
-			//assrt_statevar_annot
+	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' EXTID
 			// TODO: paramdecls
 ->
 	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
-			//assrt_statevar_annot) 
-			assrt_statevardecls
-			assrt_statevarassrt?)
-			// use ".tree" for Tree instead of .text String
-|
-	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' assrt_statevarassrt
-			// TODO: paramdecls
-->
-	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
-			//{null}  // ANTLR is filtering this somewhere?  added by the parser, but not present in getChildren
-			^(ASSRT_STATEVARDECL_LIST)  // Cf. ^(PARAMDECL_LIST)
-			assrt_statevarassrt)
+			{AssertionsParser.parseStateVarHeader($EXTID).getStateVarDeclListChild()}  // Passing the whole token
+			{AssertionsParser.parseStateVarHeader($EXTID).getAnnotAssertChild()})
+			// FIXME: EXTID parsed twice -- how to factor out without changing AssrtGProtoHeader? (Or just change latter?)
 ;
 // Following same pattern as gmsgtransfer: explicitly invoke AssertionsParser, and extra assertion element only for new category
 // -- later translation by AssrtAntlrToScribParser converts original nodes to empty-assertion new nodes
-	
-assrt_statevarassrt:  // FIXME: refactor with assrt_gmsgtransfer_annot
-	t=EXTID
-->
-	EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
-;
-
-assrt_statevardecls:
-	'<' assrt_statevardecl (',' assrt_statevardecl)* '>'
-->
-	^(ASSRT_STATEVARDECL_LIST assrt_statevardecl+)
-;
-
-assrt_statevardecl:
-	assrt_intvarname ':=' id=EXTID
-->
-	^(ASSRT_STATEVARDECL assrt_intvarname 
-			EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)])
-;
-	
-/*assrt_statevar_annot:
-	'@' t=EXTID
-->
-	////{AssertionsParser.parseStateVarAnnot($EXTID.text)}
-	//EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
-	^(ASSRT_STATEVARANNOTNODE EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)])
-;*/
 
 roledecls: 
 	'(' roledecl (',' roledecl)* ')' -> ^(ROLEDECL_LIST roledecl+)
 ;
 
 roledecl:
-	t=ROLE_KW rolename -> ^(ROLEDECL rolename)
+	ROLE_KW rolename -> ^(ROLEDECL rolename)
 ;
 
 paramdecls:
 	-> ^(PARAMDECL_LIST)
 |
-	t='<' (paramdecl (',' paramdecl)*)? '>' -> ^(PARAMDECL_LIST paramdecl*)
+	'<' (paramdecl (',' paramdecl)*)? '>' -> ^(PARAMDECL_LIST paramdecl*)
 ;
 
 paramdecl: dataparamdecl | sigparamdecl ;
 
 dataparamdecl: 
-	t=TYPE_KW dataparamname -> ^(DATAPARAMDECL dataparamname)
+	TYPE_KW dataparamname -> ^(DATAPARAMDECL dataparamname)
 |
-	t=DATA_KW dataparamname -> ^(DATAPARAMDECL dataparamname)
+	DATA_KW dataparamname -> ^(DATAPARAMDECL dataparamname)
 			// TODO: refactor -- cf. datadecl
 ;
 
 sigparamdecl:  
-	t=SIG_KW sigparamname -> ^(SIGPARAMDECL sigparamname)
+	SIG_KW sigparamname -> ^(SIGPARAMDECL sigparamname)
 ;
 
 
@@ -615,7 +580,7 @@ gprotodef:
  * Section 3.7.3 Global Interaction Blocks and Sequences
  */
 gprotoblock:
-	t='{' gseq '}' -> ^(GPROTOBLOCK gseq)
+	'{' gseq '}' -> ^(GPROTOBLOCK gseq)
 ;
 
 gseq:
@@ -677,7 +642,7 @@ assrt_gconnect:
 	//^(GCONNECT message rolename rolename)
 	^(ASSRT_GCONNECT message rolename rolename)// {null})
 |
-	t=CONNECT_KW rolename TO_KW rolename ';'
+	CONNECT_KW rolename TO_KW rolename ';'
 ->
 	//^(GCONNECT ^(SIG_LIT ^(EMPTY_OP) ^(PAYELEM_LIST)) rolename rolename)
 	^(GCONNECT ^(SIG_LIT ^(EMPTY_OP) ^(PAYELEM_LIST)) rolename rolename)// {null})
@@ -694,7 +659,7 @@ assrt_gconnect:
 /*
 |
 	//ASSRT_EXPR CONNECT_KW rolename TO_KW rolename ';'
-	t=CONNECT_KW rolename TO_KW rolename ';' '@' EXTID
+	CONNECT_KW rolename TO_KW rolename ';' '@' EXTID
 ->
 	^(ASSRT_GCONNECT {AssertionsParser.parseAssertion($EXTID.text)} 
 			rolename rolename ^(MESSAGESIGNATURE EMPTY_OPERATOR ^(PAYLOAD)))  // Empty message sig duplicated from messagesignature
@@ -702,13 +667,13 @@ assrt_gconnect:
 */
 
 gdisconnect:
-	t=DISCONNECT_KW rolename AND_KW rolename ';'
+	DISCONNECT_KW rolename AND_KW rolename ';'
 ->
 	^(GDCONN rolename rolename)
 ;
 
 gwrap:
-	t=WRAP_KW rolename TO_KW rolename ';'
+	WRAP_KW rolename TO_KW rolename ';'
 ->
 	^(GWRAP rolename rolename)
 ;
@@ -718,7 +683,7 @@ gwrap:
  * Section 3.7.5 Global Choice
  */
 gchoice:
-	t=CHOICE_KW AT_KW rolename gprotoblock (OR_KW gprotoblock)*
+	CHOICE_KW AT_KW rolename gprotoblock (OR_KW gprotoblock)*
 ->
 	^(GCHOICE rolename gprotoblock+)
 ;
@@ -728,13 +693,13 @@ gchoice:
  * Section 3.7.6 Global Recursion
  */
 grecursion:
-	t=REC_KW recvarname gprotoblock
+	REC_KW recvarname gprotoblock
 ->
 	^(GRECURSION recvarname gprotoblock)
 ;
 
 gcontinue:
-	t=CONTINUE_KW recvarname ';'
+	CONTINUE_KW recvarname ';'
 ->
 	^(GCONTINUE recvarname)
 ;
@@ -750,28 +715,15 @@ gdo:
 
 // Assrt
 |
-	DO_KW simplegprotoname roleargs ';' '@' //assrt_statevarargs
-			'<' assrt_statevararg (',' assrt_statevararg)* '>'
+	DO_KW simplegprotoname roleargs ';' '@' EXTID
 ->
-	^(ASSRT_GDO simplegprotoname ^(NONROLEARG_LIST) roleargs assrt_statevararg+)
+	^(ASSRT_GDO simplegprotoname ^(NONROLEARG_LIST) roleargs 
+			{AssertionsParser.parseStateVarArgList($EXTID)})
 ;
 // TODO: non-role args, annot
 
-/*assrt_statevarargs:
-	'<' assrt_statevararg (',' assrt_statevararg)* '>'
-->
-	^(ASSRT_... assrt_statevararg+)
-;*/
-
-// TODO: refactor with assrt_statevardecl
-assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple names (for ID)
-	id=EXTID
-->
-	EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
-;
-
 roleargs:
-	t='(' rolearg (',' rolearg)* ')' -> ^(ROLEARG_LIST rolearg+)
+	'(' rolearg (',' rolearg)* ')' -> ^(ROLEARG_LIST rolearg+)
 ;
 
 rolearg:
@@ -780,7 +732,7 @@ rolearg:
 nonroleargs:
 	-> ^(NONROLEARG_LIST)
 |
-	t='<' (nonrolearg (',' nonrolearg)*)? '>' -> ^(NONROLEARG_LIST nonrolearg*)
+	'<' (nonrolearg (',' nonrolearg)*)? '>' -> ^(NONROLEARG_LIST nonrolearg*)
 ;
 
 // Grammatically same as message, but qualifiedname case may also be a payload type

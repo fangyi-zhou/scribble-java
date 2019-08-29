@@ -294,11 +294,12 @@ public class AssrtAstFactoryImpl extends AstFactoryImpl
 
 	@Override
 	public AssrtGDo AssrtGDo(Token t, GProtoNameNode proto, NonRoleArgList as,
-			RoleArgList rs, List<AssrtAExprNode> aexprs)
+			RoleArgList rs, //List<AssrtAExprNode> aexprs)
+			AssrtStateVarArgList sexprs)
 	{
 		t = newToken(t, this.tokens.getType("ASSRT_GLOBALDO"));
 		AssrtGDo n = new AssrtGDo(t);
-		n.addScribChildren(proto, as, rs, aexprs);
+		n.addScribChildren(proto, as, rs, sexprs);
 		n.decorateDel(this.df);
 		return n;
 	}
