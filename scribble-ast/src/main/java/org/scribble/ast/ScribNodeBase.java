@@ -71,11 +71,11 @@ public abstract class ScribNodeBase extends CommonTree implements ScribNode
 		return (ScribNode) super.getParent();
 	}
 
-	@Override
+	/*@Override  // Not needed, and reduces flexibility in parsing (e.g., Assertions.g, uses "intermediary" parse tree objects, i.e. non ScribNodes)
 	public ScribNode getChild(int i)
 	{
 		return (ScribNode) super.getChild(i);
-	}
+	}*/
 	
 	// N.B. "overriding" base ANTLR behaviour of (sometimes?) returning null when
 	// getChildCount() == 0 by returning an empty list instead
@@ -122,9 +122,10 @@ public abstract class ScribNodeBase extends CommonTree implements ScribNode
 	/*@Override
 	public abstract ScribNodeBase clone(AstFactory af);*/
 
+	@Override
 	public ScribNodeBase clone()
 	{
-		ScribNodeBase dup = (ScribNodeBase) dupNode();
+		ScribNodeBase dup = dupNode();
 		getChildren().forEach(x -> dup.addChild(x.clone()));
 		dup.del = this.del;
 		return dup;

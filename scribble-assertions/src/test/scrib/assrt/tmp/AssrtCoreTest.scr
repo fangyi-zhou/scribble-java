@@ -171,10 +171,10 @@ type <dotnet> "System.UInt32" from "..." as int;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
-global protocol Proto1(role A, role B) @"<x:=0> x>1" //@"<x:=0>"
+global protocol Proto1(role A, role B) @"x>1" //@"<x:=0>"
 {
 	1() from A to B;
-	do Proto1(A, B); @"<0>"
+	do Proto1(A, B);
 }
 
 

@@ -128,7 +128,7 @@ tokens
 	}
   
 	// t is an EXTID token
-	public static AssrtStateVarAnnotNode parseStateVarDeclList(Token t) 
+	public static AssrtStateVarAnnotNode parseStateVarHeader(Token t) 
 			throws RecognitionException
 	{
 		String source = t.getText();
@@ -137,9 +137,20 @@ tokens
 		AssertionsParser parser = new AssertionsParser(
 				new CommonTokenStream(lexer));
 		parser.setTreeAdaptor(new AssertionsTreeAdaptor());
-		return (AssrtStateVarAnnotNode) parser.statevardecllist().getTree();
+		AssrtStateVarAnnotNode tmp = (AssrtStateVarAnnotNode) 
+				parser.assrt_headerannot().getTree();
+		if (tmp.getChildCount() > 1)
+		{
+			CommonTree bool_expr = (CommonTree) 
+					tmp.getChild(AssrtStateVarAnnotNode.ASSRT_ASSERTION_CHILD_INDEX);
+			AssrtBExprNode ass = new AssrtBExprNode(t.getType(), t, (AssrtBFormula)
+					AssrtAntlrToFormulaParser.getInstance().parse(bool_expr));
+			tmp.setChild(AssrtStateVarAnnotNode.ASSRT_ASSERTION_CHILD_INDEX, ass);
+		}
+		return tmp;
 	}
 
+	// t is an EXTID token
 	public static AssrtStateVarArgList parseStateVarArgList(Token t) 
 			throws RecognitionException
 	{
@@ -148,7 +159,17 @@ tokens
 		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
 		AssertionsParser parser = new AssertionsParser(new CommonTokenStream(lexer));
 		parser.setTreeAdaptor(new AssertionsTreeAdaptor());
-		return (AssrtStateVarArgList) parser.assrt_statevarargs().getTree();
+		AssrtStateVarArgList tmp = (AssrtStateVarArgList) 
+				parser.assrt_statevarargs().getTree();
+		for (int i = 0; i < tmp.getChildCount(); i++)
+		{
+			CommonTree arith_expr = (CommonTree) 
+					tmp.getChild(i);
+			AssrtAExprNode arg = new AssrtAExprNode(t.getType(), t, (AssrtAFormula)
+					AssrtAntlrToFormulaParser.getInstance().parse(arith_expr));
+			tmp.setChild(i, arg);
+		}
+		return tmp;
 	}
 }
 
@@ -295,24 +316,14 @@ unint_fun_arg_list:
 ;
 */
 	
-statevardecllist:
-	bool_expr
+assrt_headerannot:
+	bool_expr  // Parsed to AssrtBExprNode by parseStateVarHeader
 ->
-	^(ASSRT_HEADERANNOT ^(ASSRT_STATEVARDECL_LIST) {new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtBFormula) AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) $bool_expr.tree))})
-			// HACK: https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
-			// FIXME: gives last token, e.g., "x+1" gives "1" -- return bexpr here and create ScribNodes in aux?
+	^(ASSRT_HEADERANNOT ^(ASSRT_STATEVARDECL_LIST) bool_expr)
 |
-	assrt_statevardecls bool_expr_opt?
+	assrt_statevardecls bool_expr?
 ->
-	^(ASSRT_HEADERANNOT assrt_statevardecls 
-			bool_expr_opt?
-	)
-;
-
-bool_expr_opt:
-	bool_expr
-->
-	{new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtBFormula) AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) $bool_expr.tree))}
+	^(ASSRT_HEADERANNOT assrt_statevardecls bool_expr?)
 ;
 
 assrt_statevardecls:
@@ -337,10 +348,7 @@ assrt_statevarargs:
 	^(ASSRT_STATEVARARG_LIST assrt_statevararg+)
 ;
 
-// TODO: refactor with assrt_statevardecl
-assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple names (for ID)
-	arith_expr
-->
-	{new AssrtAExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtAFormula) AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) $arith_expr.tree))}
+assrt_statevararg:
+	arith_expr  // Parsed to AssrtAExprNode by parseStateVarArgList
 ;
 	

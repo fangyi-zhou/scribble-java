@@ -533,12 +533,13 @@ assrt_gprotoheader:
 ->
 	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
 			//^(ASSRT_STATEVARDECL_LIST) 
-			{AssertionsParser.parseStateVarDeclList($EXTID).getStateVarDeclListChild()}
-			{AssertionsParser.parseStateVarDeclList($EXTID).getAnnotAssertChild()})
+			{AssertionsParser.parseStateVarHeader($EXTID).getStateVarDeclListChild()}
+			{AssertionsParser.parseStateVarHeader($EXTID).getAnnotAssertChild()})
 			//{new AssrtBExprNode($EXTID.type, $EXTID, (AssrtBFormula) AssertionsParser.parseStateVarDeclList($EXTID).getChild(0))})  // $id.text doesn't seem to work
 //{AssertionsParser.parseStateVarDeclList($EXTID).getChild(0)})
 			// use ".tree" for Tree instead of .text String
 ;
+
 
 
 /*|
