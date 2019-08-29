@@ -54,8 +54,8 @@ tokens
 	ASSRT_STATEVARDECL_LIST;
 	ASSRT_STATEVARDECL;
 	ASSRT_STATEVARDECLLISTASSERTION;
-	/*ASSRT_STATEVARARGLIST;
-	ASSRT_EMPTYASS;*/
+	ASSRT_STATEVARARG_LIST;
+	ASSRT_EMPTYASS;
 	ASSRT_STATEVARANNOTNODE;
 }
 
@@ -203,12 +203,15 @@ tokens
 		return n;
 	}*/
 
-	public static CommonTree parseStateVarArgList(String source) throws RecognitionException
+	//public static List<AssrtAExprNode> parseStateVarArgList(String source) throws RecognitionException
+	public static List<AssrtAExprNode> parseStateVarArgList(Token t) throws RecognitionException
 	{
+		String source = t.getText();
 		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
 		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
 		AssertionsParser parser = new AssertionsParser(new CommonTokenStream(lexer));
-		return (CommonTree) parser.statevararglist().getTree();
+		CommonTree tree = (CommonTree) parser.statevararglist().getTree();
+		return tree.getChildren().stream().map(x -> new AssrtAExpr(t.getType(), t, (AssrtAFormula) x)).collect(Collectors.toList());
 	}
 //*/
 }
@@ -463,14 +466,13 @@ assrt_statevardecl:
 assrt_statevarargs:
 	'<' assrt_statevararg (',' assrt_statevararg)* '>'
 ->
-	^(ASSRT_... assrt_statevararg+)  // HERE statevararglist
+	^(ASSRT_STATEVARARG_LIST assrt_statevararg+)  // HERE statevararglist
 ;
 
 // TODO: refactor with assrt_statevardecl
 assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple names (for ID)
-	id=EXTID
-->
-	EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
+	arith_expr
+	//EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
 ;
 	
 	
