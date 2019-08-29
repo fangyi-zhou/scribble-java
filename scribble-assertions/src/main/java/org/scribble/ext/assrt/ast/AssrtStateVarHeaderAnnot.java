@@ -7,14 +7,14 @@ import org.scribble.ext.assrt.del.AssrtDelFactory;
 import org.scribble.util.ScribException;
 import org.scribble.visit.AstVisitor;
 
-public class AssrtStateVarAnnotNode extends ScribNodeBase
+public class AssrtStateVarHeaderAnnot extends ScribNodeBase
 {	
 	// Moved/copied here from AssrtGProtoHeader
 	public static final int ASSRT_STATEVARDECLLIST_CHILD_INDEX = 0;  // null if no @-annot; o/w may be empty but not null (cf. ParamDeclList child)
 	public static final int ASSRT_ASSERTION_CHILD_INDEX = 1;  // null if no @-annot; o/w may still be null
 
 	// ScribTreeAdaptor#create constructor
-	public AssrtStateVarAnnotNode(Token t)
+	public AssrtStateVarHeaderAnnot(Token t)
 	{
 		super(t);
 	}
@@ -23,7 +23,7 @@ public class AssrtStateVarAnnotNode extends ScribNodeBase
 	public final AssrtBExprNode ass;*/
 
 	// Created "manually" from Assertions.g, not "directly parsed"
-	public AssrtStateVarAnnotNode(Token t, AssrtStateVarDeclList svars,
+	public AssrtStateVarHeaderAnnot(Token t, AssrtStateVarDeclList svars,
 			AssrtBExprNode ass)
 	{
 		super(t);
@@ -31,7 +31,7 @@ public class AssrtStateVarAnnotNode extends ScribNodeBase
 	}
 
 	// Tree#dupNode constructor
-	protected AssrtStateVarAnnotNode(AssrtStateVarAnnotNode node)
+	protected AssrtStateVarHeaderAnnot(AssrtStateVarHeaderAnnot node)
 	{
 		super(node);
 	}
@@ -56,9 +56,9 @@ public class AssrtStateVarAnnotNode extends ScribNodeBase
 	}
 	
 	@Override
-	public AssrtStateVarAnnotNode dupNode()
+	public AssrtStateVarHeaderAnnot dupNode()
 	{
-		return new AssrtStateVarAnnotNode(this);
+		return new AssrtStateVarHeaderAnnot(this);
 	}
 	
 	@Override
@@ -67,17 +67,17 @@ public class AssrtStateVarAnnotNode extends ScribNodeBase
 		((AssrtDelFactory) df).AssrtStateVarAnnotNode(this);
 	}
 	
-	public AssrtStateVarAnnotNode reconstruct(AssrtStateVarDeclList svars,
+	public AssrtStateVarHeaderAnnot reconstruct(AssrtStateVarDeclList svars,
 			AssrtBExprNode ass)
 	{
-		AssrtStateVarAnnotNode dup = dupNode();
+		AssrtStateVarHeaderAnnot dup = dupNode();
 		dup.addScribChildren(svars, ass);
 		dup.setDel(del());  // No copy
 		return dup;
 	}
 
 	@Override
-	public AssrtStateVarAnnotNode visitChildren(AstVisitor v)
+	public AssrtStateVarHeaderAnnot visitChildren(AstVisitor v)
 			throws ScribException
 	{
 		AssrtStateVarDeclList svars = getStateVarDeclListChild();

@@ -71,16 +71,16 @@ tokens
 
   import org.scribble.ext.assrt.ast.AssrtAExprNode;
   import org.scribble.ext.assrt.ast.AssrtBExprNode;
-	import org.scribble.ext.assrt.ast.AssrtStateVarAnnotNode;
+	import org.scribble.ext.assrt.ast.AssrtStateVarHeaderAnnot;
+	import org.scribble.ext.assrt.ast.AssrtStateVarArgList;
+	import org.scribble.ext.assrt.ast.AssrtStateVarDecl;
 	import org.scribble.ext.assrt.ast.AssrtStateVarDeclList;
+  import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
 	import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 	import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 	import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
   import org.scribble.ext.assrt.parser.assertions.AssertionsTreeAdaptor;
 	import org.scribble.ext.assrt.parser.assertions.AssrtAntlrToFormulaParser;
-
-	import org.scribble.ext.assrt.ast.AssrtStateVarArgList;
-  import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
 }
 
 @lexer::header
@@ -128,7 +128,7 @@ tokens
 	}
   
 	// t is an EXTID token
-	public static AssrtStateVarAnnotNode parseStateVarHeader(Token t) 
+	public static AssrtStateVarHeaderAnnot parseStateVarHeader(Token t) 
 			throws RecognitionException
 	{
 		String source = t.getText();
@@ -137,15 +137,26 @@ tokens
 		AssertionsParser parser = new AssertionsParser(
 				new CommonTokenStream(lexer));
 		parser.setTreeAdaptor(new AssertionsTreeAdaptor());
-		AssrtStateVarAnnotNode tmp = (AssrtStateVarAnnotNode) 
+		AssrtStateVarHeaderAnnot tmp = (AssrtStateVarHeaderAnnot) 
 				parser.assrt_headerannot().getTree();
+		AssrtStateVarDeclList svars = (AssrtStateVarDeclList)
+				tmp.getChild(AssrtStateVarHeaderAnnot.ASSRT_STATEVARDECLLIST_CHILD_INDEX);
+		for (int i = 0; i < svars.getChildCount(); i++)
+		{
+			AssrtStateVarDecl sdecl = (AssrtStateVarDecl) svars.getChild(i);
+			CommonTree arith_expr = (CommonTree) 
+					sdecl.getChild(AssrtStateVarDecl.ASSRT_STATEVAREXPR_CHILD_INDEX);
+			AssrtAExprNode arg = new AssrtAExprNode(t.getType(), t, (AssrtAFormula)
+					AssrtAntlrToFormulaParser.getInstance().parse(arith_expr));
+			sdecl.setChild(AssrtStateVarDecl.ASSRT_STATEVAREXPR_CHILD_INDEX, arg);
+		}
 		if (tmp.getChildCount() > 1)
 		{
 			CommonTree bool_expr = (CommonTree) 
-					tmp.getChild(AssrtStateVarAnnotNode.ASSRT_ASSERTION_CHILD_INDEX);
+					tmp.getChild(AssrtStateVarHeaderAnnot.ASSRT_ASSERTION_CHILD_INDEX);
 			AssrtBExprNode ass = new AssrtBExprNode(t.getType(), t, (AssrtBFormula)
 					AssrtAntlrToFormulaParser.getInstance().parse(bool_expr));
-			tmp.setChild(AssrtStateVarAnnotNode.ASSRT_ASSERTION_CHILD_INDEX, ass);
+			tmp.setChild(AssrtStateVarHeaderAnnot.ASSRT_ASSERTION_CHILD_INDEX, ass);
 		}
 		return tmp;
 	}
@@ -163,8 +174,7 @@ tokens
 				parser.assrt_statevarargs().getTree();
 		for (int i = 0; i < tmp.getChildCount(); i++)
 		{
-			CommonTree arith_expr = (CommonTree) 
-					tmp.getChild(i);
+			CommonTree arith_expr = (CommonTree) tmp.getChild(i);
 			AssrtAExprNode arg = new AssrtAExprNode(t.getType(), t, (AssrtAFormula)
 					AssrtAntlrToFormulaParser.getInstance().parse(arith_expr));
 			tmp.setChild(i, arg);
@@ -317,13 +327,13 @@ unint_fun_arg_list:
 */
 	
 assrt_headerannot:
-	bool_expr  // Parsed to AssrtBExprNode by parseStateVarHeader
+	bool_expr
 ->
-	^(ASSRT_HEADERANNOT ^(ASSRT_STATEVARDECL_LIST) bool_expr)
+	^(ASSRT_HEADERANNOT ^(ASSRT_STATEVARDECL_LIST) bool_expr)  // bool_expr parsed to AssrtBExprNode by parseStateVarHeader
 |
 	assrt_statevardecls bool_expr?
 ->
-	^(ASSRT_HEADERANNOT assrt_statevardecls bool_expr?)
+	^(ASSRT_HEADERANNOT assrt_statevardecls bool_expr?)  // bool_expr parsed to AssrtBExprNode by parseStateVarHeader
 ;
 
 assrt_statevardecls:
@@ -336,10 +346,12 @@ assrt_statevardecls:
 assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 
 assrt_statevardecl:
-	assrt_intvarname ':=' arith_expr
+	assrt_intvarname ':=' arith_expr  // arith_expr parsed to AssrtAExprNode by parseStateVarHeader
 ->
 	^(ASSRT_STATEVARDECL assrt_intvarname
-			{new AssrtAExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtAFormula) AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) $arith_expr.tree))})
+			//{new AssrtAExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtAFormula) AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) $arith_expr.tree))}
+			arith_expr
+	)
 ;
 
 assrt_statevarargs:
