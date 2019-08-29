@@ -8,9 +8,10 @@
 grammar Assertions;  // TODO: rename AssrtExt(Id), or AssrtAnnotation
 
 
-/**
+/*
  * TODO:
- * - refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor?
+ * - refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor? -- and set ASTLabelType=ScribNodeBase?
+ * - 
  */
 
 options
@@ -170,7 +171,9 @@ tokens
 		//AssrtSmtFormula<?> res = AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) parser.statevardecllist().getTree());
 
 		CommonTree tree = (CommonTree) parser.statevardecllist().getTree();
-		//System.out.println("aaa: " + tree + " ,, " + tree.getChildCount() + " ,, " + tree.getChild(0));
+
+		//System.out.println("aaa: " + tree.getChild(1) + " ,, " + ((CommonTree) tree.getChild(1)).getToken());
+		
 		return (AssrtStateVarAnnotNode) tree;
 
 		/*
@@ -209,6 +212,7 @@ tokens
 		//n.addScribChildren(...);
 		return n;
 	}*/
+
 
 	//public static List<AssrtAExprNode> parseStateVarArgList(String source) throws RecognitionException
 	//public static List<AssrtAExprNode> parseStateVarArgList(Token t) throws RecognitionException
@@ -373,30 +377,6 @@ unint_fun_arg_list:
 ;
 */
 	
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-// statevars -- TODO: refactor to AssrtScribble.g -- no: it's all inside the EXTID annot -- but: doesn't have to be...
-
 //*	
 //annot_statevardecls: statevardecllist EOF;
 
@@ -406,7 +386,9 @@ statevardecllist:
 	//^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECLLISTASSERTION bool_expr))
 	//^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECLLISTASSERTION {new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1),   // https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
 					//(AssrtBFormula) AssrtAntlrToFormulaParser .getInstance().parse((CommonTree) $bool_expr.tree))}))
-	^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECL_LIST) {new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1),   // https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
+	^(ASSRT_STATEVARANNOTNODE ^(ASSRT_STATEVARDECL_LIST) {new AssrtBExprNode(input.LT(-1).getType(), input.LT(-1),   
+			// HACK: https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
+			// FIXME: gives last token, e.g., "x+1" gives "1" -- return bexpr here and create ScribNodes in aux?
 					(AssrtBFormula) AssrtAntlrToFormulaParser .getInstance().parse((CommonTree) $bool_expr.tree))})
 
 	//^(ASSRT_STATEVARANNOT {AssertionsParser.parseAssertion((CommonTree) $bool_expr.tree)})
