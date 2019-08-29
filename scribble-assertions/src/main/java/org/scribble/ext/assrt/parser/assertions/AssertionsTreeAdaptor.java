@@ -38,7 +38,7 @@ public class AssertionsTreeAdaptor extends CommonTreeAdaptor
 
 		switch (t.getText())
 		{
-		case "ASSRT_STATEVARANNOTNODE":
+		case "ASSRT_HEADERANNOT":
 			return new AssrtStateVarAnnotNode(t);
 		case "ASSRT_STATEVARDECL_LIST":
 			return new AssrtStateVarDeclList(t);
