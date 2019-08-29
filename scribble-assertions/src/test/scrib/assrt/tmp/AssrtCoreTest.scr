@@ -171,11 +171,53 @@ type <dotnet> "System.UInt32" from "..." as int;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
-global protocol Proto1(role A, role B) @"True" //@"<x:=0>"
+global protocol Proto1(role A, role B)
 {
 	1() from A to B;
-	do Proto1(A, B);
+	do Proto1Aux(A, B); @"<0>"
 }
+
+aux global protocol Proto1Aux(role A, role B) @"<x:=0> x<5"
+{
+	choice at A
+	{
+		1() from A to B; @"x<5"
+		do Proto1Aux(A, B); @"<x+1>"
+	}	
+	or
+	{
+		2() from A to B; @"x>=5"  
+	}
+}
+
+
+/*
+global protocol Proto1(role A, role B) @"<x:=0>"
+{
+	choice at A
+	{
+		1() from A to B; @"x<5"
+		do Proto1(A, B); @"<x+1>"
+	}	
+	or
+	{
+		2() from A to B; @"x>=5"  
+				// Testing unsat after deprecating state var init exprs and "constant propagation"
+				// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
+				//@"x=5"  // Bad assrt-prog
+	}
+}
+//*/
+
+/*
+global protocol Proto1(role A, role B) @"<x:=0> x>1"
+{
+	1() from A to B;
+	do Proto1(A, B);  @"<x-1>"  // Bad -- CHECKME: add tests?
+	//do Proto1(A, B);  @"<x>" // OK
+	//do Proto1(A, B);  @"<x+1>"
+}
+//*/
 
 
 

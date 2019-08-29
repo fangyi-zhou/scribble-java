@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -39,14 +38,11 @@ import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinCompFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtFormulaFactory;
-import org.scribble.ext.assrt.core.type.formula.AssrtIntValFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtIntVarFormula;
-import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.model.endpoint.AssrtEState;
-import org.sosy_lab.java_smt.api.Formula;
 
 			
 public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
@@ -203,9 +199,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		updateOutput(self, a, succ, K, F, V, R); //rename, scopes);
 		//updateR(R, self, es);
 
-		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, V,
-				R, K, F //rename scopes
-				);
+		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, K,
+				F, V, R); //rename scopes, 
 	}
 
   // CHECKME: only need to update self entries of Maps -- almost: except for addAnnotOpensToF, and some renaming via Streams
@@ -299,9 +294,10 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			{
 				AssrtIntVar svar = e.getKey();
 				AssrtAFormula sexpr = null;
-				if (aexprs.isEmpty())
+				if (aexprs.isEmpty())  // "Init" state var expr -- must be a "constant"
 				{
-					sexpr = e.getValue();  // "Init" state var expr
+					//sexpr = e.getValue();
+					sexpr = AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
 				}
 				else
 				{
@@ -311,6 +307,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 									.anyMatch(x -> x.toString().equals(next.toString())) // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g -- no: broken, get `y=y`
 							? next  // A "direct" equality to a state var can be left "unerased" without increasing the overall state space -- no: e.g., do Fib <y, z1>, `x=y` where (old) `y` unerased conflicts with `y=z1`
 											: (AssrtAFormula) renameFormula(next);*/
+					/* // Deprecating special case treatment of statevar init exprs and "constant propagation" (and constants)
 					if (next instanceof AssrtIntVarFormula)
 					{
 						Optional<AssrtIntValFormula> con = isConst(Vself_orig,
@@ -323,11 +320,24 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					if (sexpr == null)
 					{
 						sexpr = (AssrtAFormula) renameFormula(next);
+					}*/
+					if (next.isConstant())
+					// Deprecated special case treatment of statevar init exprs and "constant propagation"
+					// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
+					{
+						sexpr = //makeFreshIntVar(new AssrtIntVar("__z"));  // TODO: factor out
+								AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
+					}
+					else
+					{
+						sexpr = (AssrtAFormula) AssrtCoreSGraphBuilderUtil
+								.renameFormula(next);
 					}
 				}
 				if (isContinue   // CHECKME: "shadowing", e.g., forwards statevar has same name as a previous
-						&& !((sexpr instanceof AssrtIntVarFormula)  // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g
-							&& sexpr.toString().equals(svar.toString())))
+				/*&& !((sexpr instanceof AssrtIntVarFormula)  // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g
+					&& sexpr.toString().equals(svar.toString()))*/  // Now disabled, related to deprecating special case treatment of state var init exprs and "constants"
+				)
 					{
 						gcVR(Vself, Rself, svar);  // GC V , sexpr may be different than that removed
 						gcF(Fself, svar);
@@ -340,7 +350,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		}
 	}
 
-	private Optional<AssrtIntValFormula> isConst(
+	/*private Optional<AssrtIntValFormula> isConst(
 			Map<AssrtIntVar, AssrtAFormula> Vself_orig, AssrtIntVarFormula next,
 			Set<AssrtIntVarFormula> seen)
 	{
@@ -365,7 +375,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			}
 		}
 		return Optional.empty();
-	}
+	}*/
 	
 	private void gcF(Set<AssrtBFormula> Fself, AssrtIntVar v) 
 	{
@@ -392,19 +402,6 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		}
 	}
 
-	private static <T extends Formula> AssrtSmtFormula<T>
-			renameFormula(AssrtSmtFormula<T> f)
-	{
-		for (AssrtIntVar v : f.getIntVars())
-		{
-			AssrtIntVarFormula old = AssrtFormulaFactory.AssrtIntVar(v.toString());  // N.B. making *Formula*
-			AssrtIntVarFormula fresh = AssrtFormulaFactory
-					.AssrtIntVar("_" + v.toString());  // HACK
-			f = f.subs(old, fresh);  // N.B., works on Formulas
-		}
-		return f;
-	}
-	
 	private static void compactF(Set<AssrtBFormula> Fself)
 	{
 		Iterator<AssrtBFormula> i = Fself.iterator();
@@ -443,8 +440,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				);
 		//updateR(R, self, es);
 
-		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, V,
-				R, K, F//, rename scopes
+		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, K,
+				F, V, R
+		//, rename scopes
 				);
 	}
 
@@ -1069,10 +1067,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		if (isInit)
 		{
-			return this.P.entrySet().stream().map(e ->  // anyMatch is on the endpoints (not actions)
-			getInitRecAssertCheck(core, fullname, e.getKey(),
-					(AssrtEState) e.getValue().curr)
-			).collect(Collectors.toSet());
+			return /*this.P.entrySet().stream().map(e ->  // anyMatch is on the endpoints (not actions)
+							getInitRecAssertCheck(core, fullname, e.getKey(),
+							(AssrtEState) e.getValue().curr)
+							).collect(Collectors.toSet());*/
+			Collections.emptySet(); // Deprecating special case treatment of statevar init exprs and "constants"
 		}
 		else
 		{
@@ -1462,7 +1461,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 
 	private static AssrtIntVarFormula makeFreshIntVar(AssrtIntVar var)
 	{
-		return AssrtFormulaFactory.AssrtIntVar("_" + var.toString() + counter++);  // HACK
+		return AssrtFormulaFactory
+				.AssrtIntVar("_" + var.toString() + AssrtCoreSConfig.counter++);  // HACK
 	}
 
 	private static AssrtBFormula forallQuantifyFreeVars(AssrtCore core,

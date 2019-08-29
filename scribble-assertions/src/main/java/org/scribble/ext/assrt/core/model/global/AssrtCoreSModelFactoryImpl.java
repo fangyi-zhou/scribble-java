@@ -53,13 +53,13 @@ public class AssrtCoreSModelFactoryImpl extends SModelFactoryImpl //AssrtSModelF
 
 	@Override
 	public AssrtCoreSConfig AssrtCoreSConfig(Map<Role, EFsm> P, SSingleBuffers Q,
-			Map<Role, Map<AssrtIntVar, AssrtAFormula>> R,
-			Map<Role, Set<AssrtBFormula>> Rass, Map<Role, Set<AssrtIntVar>> K,
-			Map<Role, Set<AssrtBFormula>> F)
+			Map<Role, Set<AssrtIntVar>> K,
+			Map<Role, Set<AssrtBFormula>> F, Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
+			Map<Role, Set<AssrtBFormula>> R)
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename
 			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes)
 	{
-		return new AssrtCoreSConfig(this.mf, P, Q, K, F, R, Rass //rename, scopes
+		return new AssrtCoreSConfig(this.mf, P, Q, K, F, V, R //rename, scopes
 				);
 	}
 

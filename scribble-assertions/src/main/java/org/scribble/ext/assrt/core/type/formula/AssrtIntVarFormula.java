@@ -36,6 +36,12 @@ public class AssrtIntVarFormula extends AssrtAFormula
 	{
 		return this.equals(old) ? neu : this;
 	}
+
+	@Override
+	public boolean isConstant()
+	{
+		return false;
+	}
 		
 	@Override
 	public String toSmt2Formula()

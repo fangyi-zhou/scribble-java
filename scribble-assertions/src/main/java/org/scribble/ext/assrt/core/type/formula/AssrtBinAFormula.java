@@ -55,6 +55,12 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 	{
 		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
 	}
+
+	@Override
+	public boolean isConstant()
+	{
+		return this.left.isConstant() && this.right.isConstant();
+	}
 	
 	@Override
 	public String toSmt2Formula()
@@ -76,8 +82,8 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 	public IntegerFormula toJavaSmtFormula() //throws AssertionParseException
 	{
 		IntegerFormulaManager fmanager = JavaSmtWrapper.getInstance().ifm;
-		IntegerFormula fleft = (IntegerFormula) this.left.toJavaSmtFormula();
-		IntegerFormula fright = (IntegerFormula) this.right.toJavaSmtFormula();
+		IntegerFormula fleft = this.left.toJavaSmtFormula();
+		IntegerFormula fright = this.right.toJavaSmtFormula();
 		switch(this.op)
 		{
 			case Add:

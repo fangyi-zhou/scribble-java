@@ -31,6 +31,12 @@ public class AssrtIntValFormula extends AssrtAFormula
 	{
 		return this;
 	}
+
+	@Override
+	public boolean isConstant()
+	{
+		return true;
+	}
 		
 	@Override
 	public String toSmt2Formula()

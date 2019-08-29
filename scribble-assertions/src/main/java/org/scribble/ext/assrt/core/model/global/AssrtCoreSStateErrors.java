@@ -61,7 +61,10 @@ public class AssrtCoreSStateErrors extends SStateErrors
 
 		if (this.state.id == init.id)
 		{
-			this.initrecass = cfg.getInitRecAssertErrors(core, fullname);
+			this.initrecass = //cfg.getInitRecAssertErrors(core, fullname);
+					// Deprecating special case treatment of statevar init exprs and "constants"
+					// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
+					Collections.emptyMap();
 			this.recass = Collections.emptyMap();
 		}
 		else
@@ -76,7 +79,8 @@ public class AssrtCoreSStateErrors extends SStateErrors
 	public boolean isEmpty()
 	{
 		return super.isEmpty() && this.unknown.isEmpty() && this.assprog.isEmpty()
-				&& this.assunsat.isEmpty() && this.recass.isEmpty();
+				&& this.assunsat.isEmpty() && this.initrecass.isEmpty()
+				&& this.recass.isEmpty();
 	}
 
 	@Override
