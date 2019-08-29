@@ -46,12 +46,8 @@ public class AssertionsTreeAdaptor extends CommonTreeAdaptor
 			return new AssrtStateVarDecl(t);
 		case "ASSRT_STATEVARARG_LIST":
 			return new AssrtStateVarArgList(t);
-
-			default:
-			{
-			//throw new RuntimeException("Unknown token text: " + t.getText());  // Shouldn't get here
+		default:
 			return super.create(t);
-			}
 		}
 	}
 }

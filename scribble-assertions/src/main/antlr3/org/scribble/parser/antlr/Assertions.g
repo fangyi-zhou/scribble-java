@@ -9,9 +9,7 @@ grammar Assertions;  // TODO: rename AssrtExt(Id), or AssrtAnnotation
 
 
 /*
- * TODO:
- * - refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor? -- and set ASTLabelType=ScribNodeBase?
- * - 
+ * TODO: refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor? -- and set ASTLabelType=ScribNodeBase?
  */
 
 options
@@ -470,27 +468,4 @@ assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple
 					(AssrtAFormula) AssrtAntlrToFormulaParser
 				.getInstance().parse((CommonTree) $arith_expr.tree))}//EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
 ;
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	
