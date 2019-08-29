@@ -16,6 +16,7 @@ package org.scribble.ext.assrt.parser.assertions;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 import org.scribble.ext.assrt.ast.AssrtStateVarAnnotNode;
+import org.scribble.ext.assrt.ast.AssrtStateVarArgList;
 import org.scribble.ext.assrt.ast.AssrtStateVarDecl;
 import org.scribble.ext.assrt.ast.AssrtStateVarDeclList;
 
@@ -43,6 +44,8 @@ public class AssertionsTreeAdaptor extends CommonTreeAdaptor
 			return new AssrtStateVarDeclList(t);
 		case "ASSRT_STATEVARDECL":
 			return new AssrtStateVarDecl(t);
+		case "ASSRT_STATEVARARG_LIST":
+			return new AssrtStateVarArgList(t);
 
 			default:
 			{

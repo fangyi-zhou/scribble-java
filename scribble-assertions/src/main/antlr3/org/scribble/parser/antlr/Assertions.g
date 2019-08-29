@@ -7,6 +7,12 @@
 
 grammar Assertions;  // TODO: rename AssrtExt(Id), or AssrtAnnotation
 
+
+/**
+ * TODO:
+ * - refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor?
+ */
+
 options
 {
 	language = Java;
@@ -41,8 +47,8 @@ tokens
 	ARITHEXPR; 
 	NEGEXPR;
 	
-	UNFUN;
-	UNFUNARGLIST;
+	/*UNFUN;
+	UNFUNARGLIST;*/
 
 	INTVAR; 
 	INTVAL; 
@@ -55,7 +61,7 @@ tokens
 	ASSRT_STATEVARDECL;
 	ASSRT_STATEVARDECLLISTASSERTION;
 	ASSRT_STATEVARARG_LIST;
-	ASSRT_EMPTYASS;
+	//ASSRT_EMPTYASS;
 	ASSRT_STATEVARANNOTNODE;
 }
 
@@ -76,6 +82,7 @@ tokens
   import org.scribble.ext.assrt.parser.assertions.AssertionsTreeAdaptor;
 	import org.scribble.ext.assrt.parser.assertions.AssrtAntlrToFormulaParser;
 
+	import org.scribble.ext.assrt.ast.AssrtStateVarArgList;
   import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
 }
 
@@ -204,14 +211,18 @@ tokens
 	}*/
 
 	//public static List<AssrtAExprNode> parseStateVarArgList(String source) throws RecognitionException
-	public static List<AssrtAExprNode> parseStateVarArgList(Token t) throws RecognitionException
+	//public static List<AssrtAExprNode> parseStateVarArgList(Token t) throws RecognitionException
+	public static AssrtStateVarArgList parseStateVarArgList(Token t) throws RecognitionException
 	{
 		String source = t.getText();
 		source = source.substring(1, source.length()-1);  // Remove enclosing quotes -- cf. AssrtScribble.g EXTID
 		AssertionsLexer lexer = new AssertionsLexer(new ANTLRStringStream(source));
 		AssertionsParser parser = new AssertionsParser(new CommonTokenStream(lexer));
-		CommonTree tree = (CommonTree) parser.statevararglist().getTree();
-		return tree.getChildren().stream().map(x -> new AssrtAExpr(t.getType(), t, (AssrtAFormula) x)).collect(Collectors.toList());
+		parser.setTreeAdaptor(new AssertionsTreeAdaptor());
+		CommonTree tree = (CommonTree) parser.assrt_statevarargs().getTree();
+		//return tree.getChildren().stream().map(x -> new AssrtAExpr(t.getType(), t, (AssrtAFormula) x)).collect(Collectors.toList());
+		//System.out.println("aaa: " + tree + " ,, " + tree.getChildren() + " ,, " + tree.getClass());
+		return (AssrtStateVarArgList) tree;
 	}
 //*/
 }
@@ -472,7 +483,10 @@ assrt_statevarargs:
 // TODO: refactor with assrt_statevardecl
 assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple names (for ID)
 	arith_expr
-	//EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
+->
+	{new AssrtAExprNode(input.LT(-1).getType(), input.LT(-1),   // https://www.antlr3.org/pipermail/antlr-interest/2010-January/037325.html 
+					(AssrtAFormula) AssrtAntlrToFormulaParser
+				.getInstance().parse((CommonTree) $arith_expr.tree))}//EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
 ;
 	
 	

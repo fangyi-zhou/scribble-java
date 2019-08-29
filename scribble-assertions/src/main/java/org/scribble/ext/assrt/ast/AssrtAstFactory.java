@@ -80,7 +80,8 @@ public interface AssrtAstFactory extends AstFactory
 	AssrtGContinue AssrtGContinue(Token t, RecVarNode rv,
 			List<AssrtAExprNode> aexprs);
 	AssrtGDo AssrtGDo(Token t, GProtoNameNode proto, NonRoleArgList as,
-			RoleArgList rs, List<AssrtAExprNode> aexprs);
+			RoleArgList rs, //List<AssrtAExprNode> aexprs);
+			AssrtStateVarArgList sexprs);
 
 	@Deprecated  // Not currently parsed (or used)
 	AssrtGRecursion AssrtGRecursion(Token t, RecVarNode rv, GProtoBlock block,

@@ -25,6 +25,7 @@ import org.scribble.ext.assrt.ast.AssrtAssertDecl;
 import org.scribble.ext.assrt.ast.AssrtBExprNode;
 import org.scribble.ext.assrt.ast.AssrtModule;
 import org.scribble.ext.assrt.ast.AssrtStateVarAnnotNode;
+import org.scribble.ext.assrt.ast.AssrtStateVarArgList;
 import org.scribble.ext.assrt.ast.AssrtStateVarDecl;
 import org.scribble.ext.assrt.ast.AssrtStateVarDeclList;
 import org.scribble.ext.assrt.ast.global.AssrtGConnect;
@@ -216,6 +217,12 @@ public class AssrtDelFactoryImpl extends DelFactoryImpl implements AssrtDelFacto
 
 	@Override
 	public void AssrtStateVarDecl(AssrtStateVarDecl n)
+	{
+		setDel(n, createDefaultDel());
+	}
+
+	@Override
+	public void AssrtStateVarArgList(AssrtStateVarArgList n)
 	{
 		setDel(n, createDefaultDel());
 	}

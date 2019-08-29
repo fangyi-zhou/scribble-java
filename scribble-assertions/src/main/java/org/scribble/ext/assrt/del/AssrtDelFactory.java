@@ -20,6 +20,7 @@ import org.scribble.ext.assrt.ast.AssrtAssertDecl;
 import org.scribble.ext.assrt.ast.AssrtBExprNode;
 import org.scribble.ext.assrt.ast.AssrtModule;
 import org.scribble.ext.assrt.ast.AssrtStateVarAnnotNode;
+import org.scribble.ext.assrt.ast.AssrtStateVarArgList;
 import org.scribble.ext.assrt.ast.AssrtStateVarDecl;
 import org.scribble.ext.assrt.ast.AssrtStateVarDeclList;
 import org.scribble.ext.assrt.ast.global.AssrtGConnect;
@@ -55,6 +56,7 @@ public interface AssrtDelFactory extends DelFactory
 	void AssrtStateVarAnnotNode(AssrtStateVarAnnotNode n);
 	void AssrtStateVarDeclList(AssrtStateVarDeclList n);
 	void AssrtStateVarDecl(AssrtStateVarDecl n);
+	void AssrtStateVarArgList(AssrtStateVarArgList n);
 
 	void AssrtGMsgTransfer(AssrtGMsgTransfer n);
 	void AssrtGConnect(AssrtGConnect n);
