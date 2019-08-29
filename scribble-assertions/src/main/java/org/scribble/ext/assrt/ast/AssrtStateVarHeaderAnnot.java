@@ -7,6 +7,10 @@ import org.scribble.ext.assrt.del.AssrtDelFactory;
 import org.scribble.util.ScribException;
 import org.scribble.visit.AstVisitor;
 
+// Currently serves as an "intemediary" parse object between Assertions.g and
+// AssrtScribble.g
+// Finally, AssrtGProtoHeader retains only the statevardecllist and assertion,
+// not this headerannot itself
 public class AssrtStateVarHeaderAnnot extends ScribNodeBase
 {	
 	// Moved/copied here from AssrtGProtoHeader

@@ -384,11 +384,13 @@ simplesigname: t=ID -> ^(SIG_NAME ID) ;
 // "References to tokens with rewrite not found on left of -> are imaginary tokens."
 // Inlined moduledecl to make token label work
 module:  // Must be "module" (cf. "assrt_module")
-	t=MODULE_KW modulename ';' importmodule* nonprotodecl* assert_fundecl*  // Assrt  
+  // Assrt  
+	t=MODULE_KW modulename ';' importmodule* nonprotodecl* //assert_fundecl*
 	protodecl* EOF
 ->
 	^(ASSRT_MODULE ^(MODULEDECL modulename) importmodule* nonprotodecl*
-			assert_fundecl* protodecl*)
+			//assrt_fundecl* 
+			protodecl*)
 ;
 // moduledecl: MODULE_KW<ModuleDecl>^ modulename ';'  
 		// "Become root" ^ cannot be on rhs? -- so "manually" rewrite to Scribble AST token types
@@ -435,11 +437,11 @@ sigdecl:
 ;
 
 
-// Assrt  // Currently "deprecated"
-assert_fundecl:
+/*// Assrt  // Currently "deprecated"
+assrt_fundecl:
 	ASSERT_KW ID unintfunarglist simpledataname '=' EXTID ';'
-/*->
-	^(...)  // TODO*/
+//->
+//	^(...)  // TODO
 ;
 
 unintfunarglist:
@@ -452,7 +454,7 @@ unintfunarg:
 	assrt_intvarname ':' simpledataname
 -> 
 	^(ASSRT_UNINTFUNARG assrt_intvarname simpledataname)
-;
+;*/
 
 
 /**
@@ -532,65 +534,12 @@ assrt_gprotoheader:
 			// TODO: paramdecls
 ->
 	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
-			//^(ASSRT_STATEVARDECL_LIST) 
-			{AssertionsParser.parseStateVarHeader($EXTID).getStateVarDeclListChild()}
+			{AssertionsParser.parseStateVarHeader($EXTID).getStateVarDeclListChild()}  // Passing the whole token
 			{AssertionsParser.parseStateVarHeader($EXTID).getAnnotAssertChild()})
-			//{new AssrtBExprNode($EXTID.type, $EXTID, (AssrtBFormula) AssertionsParser.parseStateVarDeclList($EXTID).getChild(0))})  // $id.text doesn't seem to work
-//{AssertionsParser.parseStateVarDeclList($EXTID).getChild(0)})
-			// use ".tree" for Tree instead of .text String
+			// FIXME: EXTID parsed twice -- how to factor out without changing AssrtGProtoHeader? (Or just change latter?)
 ;
-
-
-
-/*|
-	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' assrt_statevardecls 
-			assrt_statevarassrt? 
-			//assrt_statevar_annot
-			// TODO: paramdecls
-->
-	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
-			//assrt_statevar_annot) 
-			assrt_statevardecls
-			assrt_statevarassrt?)
-			// use ".tree" for Tree instead of .text String
-|
-	GLOBAL_KW PROTOCOL_KW simplegprotoname roledecls '@' assrt_statevarassrt
-			// TODO: paramdecls
-->
-	^(ASSRT_GPROTOHEADER simplegprotoname ^(PARAMDECL_LIST) roledecls 
-			//{null}  // ANTLR is filtering this somewhere?  added by the parser, but not present in getChildren
-			^(ASSRT_STATEVARDECL_LIST)  // Cf. ^(PARAMDECL_LIST)
-			assrt_statevarassrt)
-*/
 // Following same pattern as gmsgtransfer: explicitly invoke AssertionsParser, and extra assertion element only for new category
 // -- later translation by AssrtAntlrToScribParser converts original nodes to empty-assertion new nodes
-
-assrt_statevardecls:
-	'<' assrt_statevardecl (',' assrt_statevardecl)* '>'
-->
-	^(ASSRT_STATEVARDECL_LIST assrt_statevardecl+)
-;
-
-assrt_statevardecl:
-	assrt_intvarname ':=' id=EXTID
-->
-	^(ASSRT_STATEVARDECL assrt_intvarname 
-			EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)])
-;
-	
-assrt_statevarassrt:  // FIXME: refactor with assrt_gmsgtransfer_annot
-	t=EXTID
-->
-	EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
-;
-	
-/*assrt_statevar_annot:
-	'@' t=EXTID
-->
-	////{AssertionsParser.parseStateVarAnnot($EXTID.text)}
-	//EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
-	^(ASSRT_STATEVARANNOTNODE EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)])
-;*/
 
 roledecls: 
 	'(' roledecl (',' roledecl)* ')' -> ^(ROLEDECL_LIST roledecl+)
@@ -766,28 +715,12 @@ gdo:
 
 // Assrt
 |
-	DO_KW simplegprotoname roleargs ';' '@' //assrt_statevarargs
-			//'<' assrt_statevararg (',' assrt_statevararg)* '>'
-			EXTID
+	DO_KW simplegprotoname roleargs ';' '@' EXTID
 ->
-	//^(ASSRT_GDO simplegprotoname ^(NONROLEARG_LIST) roleargs assrt_statevararg+)
 	^(ASSRT_GDO simplegprotoname ^(NONROLEARG_LIST) roleargs 
 			{AssertionsParser.parseStateVarArgList($EXTID)})
 ;
 // TODO: non-role args, annot
-
-/*assrt_statevarargs:
-	'<' assrt_statevararg (',' assrt_statevararg)* '>'
-->
-	^(ASSRT_... assrt_statevararg+)
-;*/
-
-// TODO: refactor with assrt_statevardecl
-assrt_statevararg:  // ScribNode "wrappers" (for EXTID/Assertions.g), cf. simple names (for ID)
-	id=EXTID
-->
-	EXTID<AssrtAExprNode>[$id, AssertionsParser.parseArithAnnotation($id.text)]
-;
 
 roleargs:
 	'(' rolearg (',' rolearg)* ')' -> ^(ROLEARG_LIST rolearg+)
