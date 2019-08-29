@@ -9,7 +9,11 @@ grammar Assertions;  // TODO: rename AssrtExt(Id), or AssrtAnnotation
 
 
 /*
- * TODO: refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor? -- and set ASTLabelType=ScribNodeBase?
+ * TODO: 
+ * - refactor AssrtAntlrToFormulaParser ito AssertionsTreeAdaptor?
+ * - and set ASTLabelType=ScribNodeBase? -- would need to refactor, e.g., 
+ *   AssrtBExprNode wrapping of AssrtBFormula from AssrtScribble.g into here,
+ *   cf. EXTID<AssrtBExprNode>[$t, AssertionsParser.parseAssertion($t.text)]
  */
 
 options
@@ -98,6 +102,7 @@ tokens
   	System.exit(1);
 	}
   
+	// source is an EXTID.text, including the quotes
 	public static AssrtBFormula parseAssertion(String source) 
 			throws RecognitionException
 	{
@@ -115,6 +120,7 @@ tokens
 		return (AssrtBFormula) res;
 	}
 
+	// source is an EXTID.text, including the quotes
 	public static AssrtAFormula parseArithAnnotation(String source) 
 			throws RecognitionException
 	{
@@ -342,17 +348,14 @@ assrt_statevardecls:
 	^(ASSRT_STATEVARDECL_LIST assrt_statevardecl+)
 ;
 
-// Duplicated from AssrtScribble.g
-assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
-
 assrt_statevardecl:
 	assrt_intvarname ':=' arith_expr  // arith_expr parsed to AssrtAExprNode by parseStateVarHeader
 ->
-	^(ASSRT_STATEVARDECL assrt_intvarname
-			//{new AssrtAExprNode(input.LT(-1).getType(), input.LT(-1), (AssrtAFormula) AssrtAntlrToFormulaParser.getInstance().parse((CommonTree) $arith_expr.tree))}
-			arith_expr
-	)
+	^(ASSRT_STATEVARDECL assrt_intvarname arith_expr)
 ;
+
+// Duplicated from AssrtScribble.g
+assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 
 assrt_statevarargs:
 	'<' assrt_statevararg (',' assrt_statevararg)* '>'
