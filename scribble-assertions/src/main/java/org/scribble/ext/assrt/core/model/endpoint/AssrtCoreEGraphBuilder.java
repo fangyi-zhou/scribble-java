@@ -3,6 +3,7 @@ package org.scribble.ext.assrt.core.model.endpoint;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -103,12 +104,12 @@ public class AssrtCoreEGraphBuilder extends EGraphBuilder
 		}
 		else if (cont instanceof AssrtCoreRecVar)
 		{
-			AssrtCoreLRecVar crv = (AssrtCoreLRecVar) cont;
-			AssrtEState s = recs.get(crv.recvar);
+			AssrtCoreLRecVar rv = (AssrtCoreLRecVar) cont;
+			AssrtEState s = recs.get(rv.recvar);
 
 			//AssrtArithFormula expr = crv.annotexprs;
 			//AssrtDataTypeVar annot = s.getAnnotVars().keySet().iterator().next();
-			List<AssrtAFormula> annotexprs = crv.stateexprs;
+			List<AssrtAFormula> annotexprs = rv.stateexprs;
 			//List<AssrtDataTypeVar> annotvars = s.getAnnotVars().keySet().stream().collect(Collectors.toList());
 
 			this.util.addEdge(s1, toEAction(r, k, a, //annotvars,
@@ -120,7 +121,18 @@ public class AssrtCoreEGraphBuilder extends EGraphBuilder
 					.EState(Collections.emptySet());
 					// FIXME: call Assrt directly? -- no "vars" here though (intermediate sequence states), only on rec states
 
-			this.util.addEdge(s1, toEAction(r, k, a), s);
+			EAction tmp;
+			if (cont instanceof AssrtCoreLRec)  // `a` is a f/w rec -- cont-rec `a` handled by RecVar `cont` above
+			{
+				// Cf. AssrtCoreGDo.inline, f/w rec statevar expr inlining
+				LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = ((AssrtCoreLRec) cont).statevars;
+				tmp = toEAction(r, k, a, new LinkedList<>(svars.values()));
+			}
+			else
+			{
+				tmp = toEAction(r, k, a);
+			}
+			this.util.addEdge(s1, tmp, s);
 			build(cont, s, s2, recs);
 		}
 	}

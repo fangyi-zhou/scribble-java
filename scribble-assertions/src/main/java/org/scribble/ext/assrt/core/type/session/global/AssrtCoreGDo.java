@@ -90,9 +90,11 @@ public class AssrtCoreGDo extends AssrtCoreDo<Global, AssrtCoreGType>
 
 		v.popSig();
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+		// "Inlining" action sexprs as target rec svar-exprs
 		Iterator<AssrtAFormula> sexprs = this.stateexprs.iterator();
 		gpro.statevars.keySet().forEach(x -> svars.put(x, sexprs.next()));  // gpro.statevars keyset is ordered
 				// Do-inlining is implicitly a f/w entry: also "inline" (i.e., replace) target svar exprs by this.sexprs -- sexprs o/w only carried by recvar (which f/w entry is not) 
+		// Cf. AssrtCoreEGraphBuilder.buildEdgeAndContinuation, AssrtCoreLRec `cont` f/w rec
 		return tf.AssrtCoreGRec(null, rv, inlined, svars, gpro.assertion);
 	}
 

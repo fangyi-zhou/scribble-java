@@ -288,6 +288,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			//boolean isEntry = aexprs.isEmpty() && !svars.isEmpty();  
 			boolean isContinue = !aexprs.isEmpty();
 					// Rec-entry: expr args already inlined into the rec statevars (i.e., by proto inlining) -- CHECKME: means "forwards entry?" robust?  refactor?
+			// FIXME: now always true, cf. AssrtCoreEGraphBuiler.buildEdgeAndContinuation AssrtCoreLRec `cont` f/w-rec case
 
 			Iterator<AssrtAFormula> i = aexprs.iterator();
 			for (Entry<AssrtIntVar, AssrtAFormula> e : svars.entrySet())
@@ -1065,15 +1066,15 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Set<AssrtBFormula> getRecAssertChecks(AssrtCore core,
 			GProtoName fullname, boolean isInit)
 	{
-		if (isInit)
+		/*if (isInit) // Deprecating special case treatment of statevar init exprs and "constants"
 		{
 			return /*this.P.entrySet().stream().map(e ->  // anyMatch is on the endpoints (not actions)
 							getInitRecAssertCheck(core, fullname, e.getKey(),
 							(AssrtEState) e.getValue().curr)
-							).collect(Collectors.toSet());*/
-			Collections.emptySet(); // Deprecating special case treatment of statevar init exprs and "constants"
-		}
-		else
+							).collect(Collectors.toSet());* /
+			Collections.emptySet();
+		}*/
+		//else
 		{
 			return this.P.entrySet().stream().flatMap(e ->  // anyMatch is on the endpoints (not actions)
 			e.getValue().curr.getActions().stream()
@@ -1164,14 +1165,15 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		EAction cast = (EAction) a;
 		if (cast.isReceive() || cast.isAccept())
 		{
-			/*// Now redundant, checked by getRecAssertErrors
-			// CHECKME: "skip" if no msg avail (because assertion carried by msg)? -- what is an example?
+			/*// Now redundant, checked by getRecAssertErrors -- no?
+			// CHECKME: "skip" if no msg avail (because assertion carried by msg? -- no)
+			// ^what is an example? -- due to async, e.g., input-side rec-assert checked twice w.r.t. state that does peer output (no message yet) and actual input state (message arrived)*/
 			if (!this.Q.isConnected(self, ((EAction) a).peer)
 					|| this.Q.getQueue(self).get(cast.peer) == null)
 				 // !isPendingRequest(a.peer, self))  // TODO: open/port annots
 			{
 				return AssrtTrueFormula.TRUE;
-			}*/
+			}
 		}
 		else if (!(cast.isSend() || cast.isRequest()))
 		{
@@ -1184,6 +1186,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		{
 			return AssrtTrueFormula.TRUE;
 		}
+
+		System.out.println(
+				"1111: " + self + " ,, " + curr.id + " ,, " + a + " ,, " + succ.id);
 
 		// lhs = ...  // TODO: factor out lhs building with others above -- CHECKME lhs should be same for all?
 		// Here, conjunction of F terms
@@ -1227,9 +1232,23 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					? aass
 					: AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, lhs, aass);
 		}
+
+		Set<AssrtBFormula> Rself = this.R.get(self);
+		if (!Rself.isEmpty())
+		{
+			AssrtBFormula rtmp = Rself.stream().reduce(
+					(x1, x2) -> AssrtFormulaFactory
+							.AssrtBinBool(AssrtBinBFormula.Op.And, x1, x2))
+					.get();
+			lhs = (lhs == null)
+					? rtmp
+					: AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, lhs,
+							rtmp);
+		}
 			
 		List<AssrtAFormula> aexprs = a.getStateExprs();
 		if (aexprs.isEmpty())  // "Forwards" rec entry -- cf. updateForAssertionAndStateExprs, updateRecEntry/Continue
+		// FIXME: now obsolete, cf. AssrtCoreEGraphBuiler.buildEdgeAndContinuation AssrtCoreLRec `cont` f/w-rec case
 		{
 			// Next for lhs, state var eq-terms for initial rec entry
 			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = succ.getStateVars();
@@ -1263,23 +1282,34 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		else  // Rec-continue
 		{
 			// Next for lhs, rec ass (on original vars)  // e.g., lhs, ...x > 0... (for existing x) => exists ...x' > 0... (for new x')
-			if (!sass.equals(AssrtTrueFormula.TRUE))
+			/*if (!sass.equals(AssrtTrueFormula.TRUE))
 			{
 				lhs = AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, lhs,
 						sass);
+			}*/
+			if (lhs == null)
+			{
+				lhs = AssrtTrueFormula.TRUE;
 			}
+
+			System.out.println("0000: " + lhs);
 
 			// rhs = existing R assertions -- CHECKME: why not just target rec ass again? (like entry)  or why entry does not check this.R and new entry ass -- i.e., why rec entry/continue not uniform?
 					// ^FIXME: should not be existing or just entry -- should be all existing up to entry ?
-			Set<AssrtBFormula> Rself = this.R.get(self);   
+			//Set<AssrtBFormula> Rself = this.R.get(self);   
 					// Can use this.R because recursing, should already have all the terms to check (R added on f/w rec-entry updateRecEntry)
 					// CHECKME: should it be *all* the terms so far? yes, because treating recursion assertions as invariants?
 			//if (!Rself.isEmpty())
-			AssrtBFormula rhs = Rself.stream().reduce(AssrtTrueFormula.TRUE,  // "identity-reduce" variant convenient here for below test
+			/*AssrtBFormula rhs = Rself.stream().reduce(//AssrtTrueFormula.TRUE,  // "identity-reduce" variant convenient here for below test
+					sass,
 					(x1, x2) -> AssrtFormulaFactory
 							.AssrtBinBool(AssrtBinBFormula.Op.And, x1, x2));
 					// CHECKME: do check, even if AA is True?  To check state var update isn't a contradiction?
-					// FIXME: that won't be checked by this, lhs just becomes false -- this should be checked by unsat? (but that is only poly choices)
+					// FIXME: that won't be checked by this, lhs just becomes false -- this should be checked by unsat? (but that is only poly choices)*/
+			AssrtBFormula rhs = sass;
+
+			System.out.println("2222: " + rhs);
+
 			if (rhs.equals(AssrtTrueFormula.TRUE))
 			{
 				return AssrtTrueFormula.TRUE;  // CHECKME: move "shortcircuit" to top?
@@ -1295,6 +1325,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				rhs = rhs.subs(AssrtFormulaFactory.AssrtIntVar(v.toString()),
 						ifresh.next());
 			}
+
+			System.out.println("3333: " + rhs);
 			
 			// Next for rhs, conjunction of eq-terms between renamed succ state vars and action state exprs -- and renamed vars ex-quantified 
 			Iterator<AssrtAFormula> iaexprs = aexprs.iterator();
@@ -1310,6 +1342,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					fresh.stream().map(x -> AssrtFormulaFactory.AssrtIntVar(x.toString()))
 							.collect(Collectors.toList()),
 					rhs);
+
+			System.out.println("4444: " + rhs);
 
 			AssrtBFormula impli = AssrtFormulaFactory
 					.AssrtBinBool(AssrtBinBFormula.Op.Imply, lhs, rhs);
@@ -1470,6 +1504,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		Set<String> rs = core.getContext().getInlined(fullname).roles.stream()
 				.map(Object::toString).collect(Collectors.toSet());
+
+		System.out.println("aaaa: " + bform);
+
 		Set<AssrtIntVar> free = bform.getIntVars().stream()
 				//.filter(x -> !rs.contains(x.toString()))  // CHECKME: formula role vars -- cf. getUnknownDataVarErrors  // CHECKME: what is an example?
 				.collect(Collectors.toSet());
