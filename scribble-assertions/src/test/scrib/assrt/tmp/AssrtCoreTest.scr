@@ -171,6 +171,22 @@ type <dotnet> "System.UInt32" from "..." as int;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
+global protocol Fib(role A, role B)  @"<x := 0, y := 1> y>0 && x>=0"
+{
+	1() from A to B;
+}
+
+
+/*
+global protocol Proto1(role A, role B) 
+		//@"<x:=0> x>=0"
+		@"<x:=0> x>0"  // Testing revised init-rec-assert check -- TODO: add test
+{
+	1() from A to B;
+}
+//*/
+
+
 /*
 global protocol Proto1(role A, role B)
 {
@@ -207,7 +223,7 @@ aux global protocol Proto1Aux(role A, role B) @"<x:=0>"
 //*/
 
 
-//*
+/*
 // testing "f/w rec" with a state assertion
 global protocol Proto1(role A, role B)
 {
@@ -216,8 +232,8 @@ global protocol Proto1(role A, role B)
 }
 
 aux global protocol Proto1Aux(role A, role B) 
-		@"<x:=0> x>5"  // TODO: add tests
-		//@"<x:=0> x>=0"
+		//@"<x:=0> x>5"  // TODO: add tests
+		@"<x:=0> x>=0"
 {
 	2() from B to A;
 }

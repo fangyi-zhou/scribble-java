@@ -65,7 +65,7 @@ public class SModel
 		}
 		if (!msg.equals(""))
 		{
-			throw new ScribException(msg);
+			throw new ScribException(this.graph.proto + ": " + msg);
 		}
 	}
 
