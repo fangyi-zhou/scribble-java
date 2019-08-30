@@ -1,4 +1,4 @@
-module bad.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest15b;
+module good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest15a;
 
 
 type <java> "java.lang.Integer" from "rt.jar" as int;  // FIXME: int keyword
@@ -11,9 +11,8 @@ global protocol Proto1(role A, role B)
 	do Proto2(A, B); @"<4>"  // Tests R update from endpoint state (as opposed to action)
 }
 
-aux global protocol Proto2(role A, role B) @"<x:=3>"  // Unsat if validated as root 
+aux global protocol Proto2(role A, role B) @"<x:=2> x>3"  // Bad if validated as root (init-rec-assert)
 {
 	2(y:int) from B to A;  @"(x>3)"
-	do Proto2(A, B); @"<5>"  // Sat
 }
 //*/
