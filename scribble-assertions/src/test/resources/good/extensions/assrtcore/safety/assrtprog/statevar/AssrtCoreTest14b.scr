@@ -11,7 +11,7 @@ global protocol Proto1(role A, role B)
 	do Proto2(A, B); @"<4>"
 }
 
-aux global protocol Proto2(role A, role B) @"<x:=0> x>3"  // Unsat if validated as root
+aux global protocol Proto2(role A, role B) @"<x:=0> x>3"  // Bad if validated as root (init-rec-assert)
 {
 	2() from B to A; @"(x>2)"
 }
