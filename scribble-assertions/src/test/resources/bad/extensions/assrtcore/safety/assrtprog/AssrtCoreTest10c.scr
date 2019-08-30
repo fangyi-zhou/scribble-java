@@ -5,7 +5,7 @@ type <java> "java.lang.Integer" from "rt.jar" as int;  // FIXME: int keyword
 
 
 //*
-global protocol Proto1(role B, role S) @"<x:=3>"
+global protocol Proto1(role B, role S) @"<x:=3> x=3"
 {
 	1(y:int) from B to S; @"(y>3)"
 	choice at S

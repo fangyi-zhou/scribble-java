@@ -105,12 +105,12 @@ public class AssrtCoreSStateErrors extends SStateErrors
 		}
 		if (!this.initrecass.isEmpty())
 		{
-			res += "\n    Initial state recursion-assertion errors: "
+			res += "\n    Initial state-assertion errors: "
 					+ this.initrecass;
 		}
 		if (!this.recass.isEmpty())
 		{
-			res += "\n    Recursion-assertion errors: " + this.recass;
+			res += "\n    State-assertion errors: " + this.recass;
 		}
 		return res;
 	}
