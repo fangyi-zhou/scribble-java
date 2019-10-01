@@ -11,6 +11,6 @@ public interface AssrtEAction
 		AssrtBFormula ass = getAssertion();
 		//return ass.equals(AssrtTrueFormula.TRUE) ? "" : ("//@\"" + ass + "\"");
 		//return "\"" + ass + "\"";
-		return ass.toString();
+		return "{" + ass.toString() + "}";
 	}
 }
