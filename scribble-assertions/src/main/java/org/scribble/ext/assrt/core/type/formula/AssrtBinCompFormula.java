@@ -117,8 +117,8 @@ public class AssrtBinCompFormula extends AssrtBFormula implements AssrtBinFormul
 	public BooleanFormula toJavaSmtFormula() //throws AssertionParseException
 	{
 		IntegerFormulaManager fmanager = JavaSmtWrapper.getInstance().ifm;
-		IntegerFormula fleft = (IntegerFormula) this.left.toJavaSmtFormula();
-		IntegerFormula fright = (IntegerFormula) this.right.toJavaSmtFormula();
+		IntegerFormula fleft = this.left.toJavaSmtFormula();
+		IntegerFormula fright = this.right.toJavaSmtFormula();
 		switch(this.op)
 		{
 			case GreaterThan: 

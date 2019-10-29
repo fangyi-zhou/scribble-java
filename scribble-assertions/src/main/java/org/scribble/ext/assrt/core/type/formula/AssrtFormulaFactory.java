@@ -61,6 +61,11 @@ public class AssrtFormulaFactory
 	{
 		return new AssrtStrValFormula(s);
 	}
+
+	public static AssrtStrVarFormula AssrtStrVar(String text)
+	{
+		return new AssrtStrVarFormula(text);
+	}
 	
 
 	// Not (currently) parsed

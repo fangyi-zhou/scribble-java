@@ -43,6 +43,8 @@ import org.scribble.ext.assrt.core.type.formula.AssrtIntVarFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
+import org.scribble.ext.assrt.core.type.session.local.AssrtCoreLRec;
+import org.scribble.ext.assrt.core.type.session.local.AssrtCoreLType;
 import org.scribble.ext.assrt.model.endpoint.AssrtEState;
 
 			
@@ -1046,10 +1048,19 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		{
 			return AssrtTrueFormula.TRUE;
 		}
-		
+
 		AssrtCoreLProjection proj = (AssrtCoreLProjection) core.getContext()
 				.getProjectedInlined(fullname, self);
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = proj.statevars;
+		AssrtCoreLType tmp = proj.type;
+		// Also need to collect svars from (immediately) nested recs -- i.e., svars from a subproto that actually becomes the top-level init state due to projection
+		while (tmp instanceof AssrtCoreLRec)
+		{
+			AssrtCoreLRec cast = (AssrtCoreLRec) tmp;
+			svars.putAll(cast.statevars);
+			tmp = cast.body;
+		}
+
 		Map<AssrtIntVar, AssrtAFormula> Vself = this.V.get(self);
 		if (!Vself.isEmpty())
 		{
@@ -1068,7 +1079,6 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			toCheck = AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.Imply,
 					Vconj, toCheck);
 		}
-
 		return forallQuantifyFreeVars(core, fullname, toCheck).squash();
 	}			
 
