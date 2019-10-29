@@ -1,12 +1,37 @@
 package org.scribble.ext.assrt.core.type.formula;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.scribble.core.type.name.DataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.name.AssrtPayElemType;
+import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
 public class AssrtAmbigVarFormula extends AssrtAVarFormula
 {
 	protected AssrtAmbigVarFormula(String name)
 	{
 		super(name);
+	}
+
+	@Override
+	public AssrtSmtFormula<IntegerFormula> disamb(Map<AssrtIntVar, DataName> env)
+	{
+		Entry<AssrtIntVar, DataName> e = env.entrySet().stream()
+				.filter(x -> x.getKey().toString().equals(this.name)).findAny().get();
+		String type = e.getValue().toString();
+		String name = e.getKey().toString();
+		switch (type)  // HACK
+		{
+		case "int":
+			return new AssrtIntVarFormula(name);
+		case "String":
+			return new AssrtStrVarFormula(name);
+		default:
+			throw new RuntimeException("Unsupported payload/state var type: " +
+					type);
+		}
 	}
 	
 	// i.e., to "type"

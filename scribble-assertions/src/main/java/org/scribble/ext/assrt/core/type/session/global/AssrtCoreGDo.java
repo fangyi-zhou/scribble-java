@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -24,6 +25,7 @@ import org.scribble.core.job.Core;
 import org.scribble.core.lang.SubprotoSig;
 import org.scribble.core.type.kind.Global;
 import org.scribble.core.type.kind.NonRoleParamKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.ProtoName;
 import org.scribble.core.type.name.RecVar;
 import org.scribble.core.type.name.Role;
@@ -48,6 +50,16 @@ public class AssrtCoreGDo extends AssrtCoreDo<Global, AssrtCoreGType>
 			List<AssrtAFormula> sexprs)
 	{
 		super(source, proto, roles, args, sexprs);
+	}
+
+	// Currently unused? disamb done on inlined -- cf. AssrtCoreContext.getInlined
+	@Override
+	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
+	{
+		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGDo(
+				getSource(), this.proto, this.roles, this.args,
+				this.stateexprs.stream().map(x -> (AssrtAFormula) x.disamb(env))
+						.collect(Collectors.toList()));
 	}
 
 	@Override

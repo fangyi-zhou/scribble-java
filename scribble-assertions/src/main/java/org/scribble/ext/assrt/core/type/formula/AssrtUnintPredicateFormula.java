@@ -2,9 +2,11 @@ package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.name.AssrtSort;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -20,6 +22,12 @@ public class AssrtUnintPredicateFormula extends AssrtBFormula implements AssrtUn
 	{
 		this.name = name;
 		this.args = Collections.unmodifiableList(args);
+	}
+
+	@Override
+	public AssrtUnintPredicateFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Shouldn't get in here: " + this);
 	}
 
 	@Override

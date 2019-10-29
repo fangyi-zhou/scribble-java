@@ -1,13 +1,16 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
+// FIXME: factor out with Int -- record "type" as a field
 // String literal
 public class AssrtStrValFormula extends AssrtAFormula
 {
@@ -16,6 +19,12 @@ public class AssrtStrValFormula extends AssrtAFormula
 	protected AssrtStrValFormula(String s)
 	{
 		this.val = s;
+	}
+
+	@Override
+	public AssrtStrValFormula disamb(Map<AssrtIntVar, DataName> env)  // FIXME: not Integer -- sosy_lab stuff should be removed?
+	{
+		return this;
 	}
 
 	@Override

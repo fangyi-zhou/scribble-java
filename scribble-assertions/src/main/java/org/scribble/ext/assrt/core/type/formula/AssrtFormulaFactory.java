@@ -66,6 +66,11 @@ public class AssrtFormulaFactory
 	{
 		return new AssrtStrVarFormula(text);
 	}
+
+	public static AssrtAmbigVarFormula AssrtAmbigVar(String text)
+	{
+		return new AssrtAmbigVarFormula(text);
+	}
 	
 
 	// Not (currently) parsed

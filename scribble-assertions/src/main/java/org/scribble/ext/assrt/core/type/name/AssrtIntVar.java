@@ -3,6 +3,8 @@ package org.scribble.ext.assrt.core.type.name;
 import org.scribble.core.type.name.AbstractName;
 import org.scribble.ext.assrt.core.type.kind.AssrtIntVarKind;
 
+// FIXME: now Strings introduced, rename to AssrtAVar -- also String formulae
+// coming under AFormula, fix
 public class AssrtIntVar extends AbstractName<AssrtIntVarKind>
 		implements AssrtPayElemType<AssrtIntVarKind>
 {

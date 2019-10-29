@@ -1,7 +1,9 @@
 package org.scribble.ext.assrt.core.type.session.global;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,20 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars, AssrtBFormula ass)
 	{
 		super(source, rv, body, svars, ass);
+	}
+
+	@Override
+	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
+	{
+		Map<AssrtIntVar, DataName> env1 = new HashMap<>(env);
+		this.statevars.entrySet()
+				.forEach(x -> env1.put(x.getKey(), new DataName("int")));  // FIXME "int" -- cf. AssrtCoreContext.getInlined
+		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+		this.statevars.entrySet().forEach(x -> svars.put(x.getKey(),
+				(AssrtAFormula) x.getValue().disamb(env1)));  // Unnecessary, disallow mutual var refs?
+		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGRec(
+				getSource(), this.recvar, this.body.disamb(core, env1), svars,
+				(AssrtBFormula) this.assertion.disamb(env1));
 	}
 
 	@Override

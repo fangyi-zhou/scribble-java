@@ -1,7 +1,9 @@
 package org.scribble.ext.assrt.core.type.formula;
 
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinBFormula.Op;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
@@ -15,6 +17,12 @@ public class AssrtNegFormula extends AssrtBFormula
 	protected AssrtNegFormula(AssrtBFormula expr)
 	{
 		this.expr = expr;
+	}
+
+	@Override
+	public AssrtNegFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtNegFormula((AssrtBFormula) this.expr.disamb(env));
 	}
 
 	@Override

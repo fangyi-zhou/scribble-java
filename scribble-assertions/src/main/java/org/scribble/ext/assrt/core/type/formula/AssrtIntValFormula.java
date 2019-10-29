@@ -1,8 +1,10 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
@@ -18,6 +20,12 @@ public class AssrtIntValFormula extends AssrtAFormula
 	protected AssrtIntValFormula(int i)
 	{
 		this.val = i; 
+	}
+
+	@Override
+	public AssrtIntValFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return this;
 	}
 
 	@Override

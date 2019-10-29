@@ -1,5 +1,8 @@
 package org.scribble.ext.assrt.core.type.formula;
 
+import java.util.Map;
+
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 // Variable occurrence
@@ -9,6 +12,12 @@ public class AssrtIntVarFormula extends AssrtAVarFormula
 	protected AssrtIntVarFormula(String name)
 	{
 		super(name);
+	}
+
+	@Override
+	public AssrtIntVarFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Won't get in here: " + this);  // Should not be re-disambiguating 
 	}
 	
 	// i.e., to "type"

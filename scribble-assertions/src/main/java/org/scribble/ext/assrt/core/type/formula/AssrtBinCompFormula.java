@@ -1,8 +1,10 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -56,6 +58,14 @@ public class AssrtBinCompFormula extends AssrtBFormula implements AssrtBinFormul
 			break;
 		default: throw new RuntimeException("[assrt] Shouldn't get in here: " + op);
 		}*/
+	}
+
+	@Override
+	public AssrtBinCompFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtBinCompFormula(this.op,
+				(AssrtAFormula) this.left.disamb(env),
+				(AssrtAFormula) this.right.disamb(env));
 	}
 
 	@Override

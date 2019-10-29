@@ -1,8 +1,10 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
@@ -43,17 +45,26 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 		this.right = right;
 		this.op = op;
 	}
+
+	@Override
+	public AssrtBinAFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtBinAFormula(this.op, (AssrtAFormula) this.left.disamb(env),
+				(AssrtAFormula) this.right.disamb(env));
+	}
 	
 	@Override
 	public AssrtBinAFormula squash()
 	{
-		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.squash(), this.right.squash());
+		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.squash(),
+				this.right.squash());
 	}
 
 	@Override
 	public AssrtBinAFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
-		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
+		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.subs(old, neu),
+				this.right.subs(old, neu));
 	}
 
 	@Override

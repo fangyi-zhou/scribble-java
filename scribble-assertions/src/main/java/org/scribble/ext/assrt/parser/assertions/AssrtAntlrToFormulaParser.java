@@ -4,11 +4,11 @@ import org.antlr.runtime.tree.CommonTree;
 import org.scribble.ext.assrt.core.type.formula.AssrtFalseFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
+import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrAmbigVar;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrArithExpr;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrBoolExpr;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrCompExpr;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrIntVal;
-import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrIntVar;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrNegExpr;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrStrVal;
 import org.scribble.parser.ScribAntlrWrapper;
@@ -60,7 +60,8 @@ public class AssrtAntlrToFormulaParser
 			return AssrtAntlrNegExpr.parseNegExpr(this, ct);
 		//case "UNFUN":     return AssrtAntlrUnFun.parseUnFun(this, ct);
 		case "INTVAR":
-			return AssrtAntlrIntVar.parseIntVar(this, ct);
+			//return AssrtAntlrIntVar.parseIntVar(this, ct);
+			return AssrtAntlrAmbigVar.parseAmbigVar(this, ct);
 		case "INTVAL":
 			return AssrtAntlrIntVal.parseIntVal(this, ct);
 		case "NEGINTVAL":

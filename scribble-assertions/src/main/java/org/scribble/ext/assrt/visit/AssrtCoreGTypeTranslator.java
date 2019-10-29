@@ -137,6 +137,14 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 		}
 		AssrtBExprNode tmp2 = hdr.getAnnotAssertChild();
 		AssrtBFormula ass = (tmp2 == null) ? AssrtTrueFormula.TRUE : tmp2.expr;
+		
+		/*Map<AssrtIntVar, DataName> env = body.assrtCoreGather(
+				new AssrtCoreVarEnvGatherer<Global, AssrtCoreGType>()::visit)
+				.collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+		svars.keySet().forEach(x -> env.put(x, new DataName("int")));  // FIXME
+		body = body.disamb((AssrtCore) this.job.getCore(), env);
+		ass = (AssrtBFormula) ass.disamb(env);*/
+		
 		return new AssrtCoreGProtocol(n, mods, fullname, rs, ps, body, svars, ass);
 	}
 

@@ -13,6 +13,8 @@
  */
 package org.scribble.ext.assrt.core.job;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,9 +22,15 @@ import org.scribble.core.job.Core;
 import org.scribble.core.job.CoreContext;
 import org.scribble.core.lang.global.GProtocol;
 import org.scribble.core.type.kind.Global;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.ProtoName;
 import org.scribble.core.visit.global.GTypeInliner;
 import org.scribble.ext.assrt.core.lang.global.AssrtCoreGProtocol;
+import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
+import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
+import org.scribble.ext.assrt.core.type.session.global.AssrtCoreGType;
+import org.scribble.ext.assrt.core.visit.gather.AssrtCoreVarEnvGatherer;
 
 public class AssrtCoreContext extends CoreContext
 {
@@ -61,8 +69,32 @@ public class AssrtCoreContext extends CoreContext
 		{
 			GTypeInliner v = this.core.config.vf.global.GTypeInliner(this.core);  // Factor out?
 			inlined = this.imeds.get(fullname).getInlined(v);  // Protocol.getInlined does pruneRecs
+
+			AssrtCoreGProtocol cast = (AssrtCoreGProtocol) inlined;
+			Map<AssrtIntVar, DataName> env = cast.type.assrtCoreGather(
+					new AssrtCoreVarEnvGatherer<Global, AssrtCoreGType>()::visit)
+					.collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+			cast.statevars.keySet().forEach(x -> env.put(x, new DataName("int")));  // FIXME "int"
+			/*AssrtCoreGType tmp = cast.type;  // Cf. AssrtCoreSConfig.getInitRecAssertCheck
+			while (tmp instanceof AssrtCoreGRec)
+			{
+				AssrtCoreGRec foo = (AssrtCoreGRec) tmp;
+				env.putAll(cast.statevars);
+				tmp = foo.body;
+			}*/
+
+			AssrtCoreGType body = cast.type.disamb((AssrtCore) core, env);
+			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+			cast.statevars.entrySet().forEach(x -> svars.put(x.getKey(),
+					(AssrtAFormula) x.getValue().disamb(env)));  // Unnecessary, disallow mutual var refs?
+			AssrtBFormula ass = (AssrtBFormula) cast.assertion.disamb(env);
+			inlined = new AssrtCoreGProtocol(inlined.getSource(), inlined.mods,
+					inlined.fullname, inlined.roles, inlined.params,
+					body, cast.statevars, ass);
+
 			addInlined(fullname, inlined);
 		}
+
 		return inlined;
 	}
 	

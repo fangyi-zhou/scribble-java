@@ -1,14 +1,22 @@
 package org.scribble.ext.assrt.core.type.formula;
 
+import java.util.Map;
+
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
-// Variable occurrence
-// FIXME: currently also used for roles -- probably need to parse as "ambig" and disamb later
+// FIXME: factor out with Int -- record "type" as a field
 public class AssrtStrVarFormula extends AssrtAVarFormula
 {
 	protected AssrtStrVarFormula(String name)
 	{
 		super(name);
+	}
+
+	@Override
+	public AssrtStrVarFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Won't get in here: " + this);  // Should not be re-disambiguating 
 	}
 	
 	// i.e., to "type"

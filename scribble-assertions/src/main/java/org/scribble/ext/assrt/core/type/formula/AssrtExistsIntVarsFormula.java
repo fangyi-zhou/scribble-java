@@ -1,18 +1,28 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.scribble.core.type.name.DataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
+// FIXME: not only int vars now -- cf. AssrtIntVar renaming
 public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 {
 	// Pre: vars non empty
 	protected AssrtExistsIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
 	{
 		super(vars, expr);
+	}
+
+	@Override
+	public AssrtExistsIntVarsFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Won't get in here: " + this);  // Not a parsed syntax
 	}
 
 	@Override
@@ -66,7 +76,7 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	protected BooleanFormula toJavaSmtFormula()
 	{
-		BooleanFormula expr = (BooleanFormula) this.expr.toJavaSmtFormula();
+		BooleanFormula expr = this.expr.toJavaSmtFormula();
 		List<IntegerFormula> vs = this.vars.stream().map(v -> v.getJavaSmtFormula()).collect(Collectors.toList());
 
 		/*JavaSmtWrapper j = JavaSmtWrapper.getInstance();  // Cf. AssrtTest.JavaSmtBug
