@@ -1,0 +1,24 @@
+module OAuth;
+
+type <dotnet> "" from "" as int;
+type <dotnet> "" from "" as string;
+
+global protocol OAuth (role C, role S, role A) {
+  login(account: int) from S to C;
+  do Auth(C, S, A); @"<0>"
+}
+
+aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0 && try<=3" {
+  password(pwd: int) from C to A;
+  choice at A {
+    authed() from A to S;
+    authed() from S to C;
+  } or {
+    again() from A to S; @"try<3"
+    again() from S to C;
+    do Auth(C, S, A); @"<try+1>"
+  } or {
+    failure() from A to S; @"try=3"
+    failure() from S to C;
+  }
+}
