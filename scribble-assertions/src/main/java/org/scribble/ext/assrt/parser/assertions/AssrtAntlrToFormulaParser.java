@@ -46,24 +46,34 @@ public class AssrtAntlrToFormulaParser
 		String lab = ct.token.getText();
 		switch (lab)  // Cf. AssrtScribTreeAdaptor
 		{
-			case "ROOT":      return parse((CommonTree) ct.getChild(0));  // TODO: deprecate, Assertions should offer only AFormula and BFormula parsing
+		case "ROOT":
+			return parse((CommonTree) ct.getChild(0));  // TODO: deprecate, Assertions should offer only AFormula and BFormula parsing
 
 			// Static "parse" methods basically in lieu of actual Antlr (CommonTree) nodes for annot syntax (cf. ScribNode, AssrtScribTreeAdaptor) 
-			case "BOOLEXPR":  return AssrtAntlrBoolExpr.parseBoolExpr(this, ct);
-			case "COMPEXPR":  return AssrtAntlrCompExpr.parseCompExpr(this, ct);
-			case "ARITHEXPR": return AssrtAntlrArithExpr.parseArithExpr(this, ct);
-			case "NEGEXPR":   return AssrtAntlrNegExpr.parseNegExpr(this, ct);
-			//case "UNFUN":     return AssrtAntlrUnFun.parseUnFun(this, ct);
-			case "INTVAR":    return AssrtAntlrIntVar.parseIntVar(this, ct);
-			case "INTVAL":    return AssrtAntlrIntVal.parseIntVal(this, ct);
-			case "NEGINTVAL": return AssrtAntlrIntVal.parseNegIntVal(this, ct);
-			case "FALSE":     return AssrtFalseFormula.FALSE;
-			case "TRUE":      return AssrtTrueFormula.TRUE;
-
+		case "BOOLEXPR":
+			return AssrtAntlrBoolExpr.parseBoolExpr(this, ct);
+		case "COMPEXPR":
+			return AssrtAntlrCompExpr.parseCompExpr(this, ct);
+		case "ARITHEXPR":
+			return AssrtAntlrArithExpr.parseArithExpr(this, ct);
+		case "NEGEXPR":
+			return AssrtAntlrNegExpr.parseNegExpr(this, ct);
+		//case "UNFUN":     return AssrtAntlrUnFun.parseUnFun(this, ct);
+		case "INTVAR":
+			return AssrtAntlrIntVar.parseIntVar(this, ct);
+		case "INTVAL":
+			return AssrtAntlrIntVal.parseIntVal(this, ct);
+		case "NEGINTVAL":
+			return AssrtAntlrIntVal.parseNegIntVal(this, ct);
+		case "FALSE":
+			return AssrtFalseFormula.FALSE;
+		case "TRUE":
+			return AssrtTrueFormula.TRUE;
 		case "STRVAL":
 			return AssrtAntlrStrVal.parseStrVal(this, ct);
 
-			default:          throw new RuntimeException("[assrt] Unexpected ANTLR node type: " + lab);
+		default:
+			throw new RuntimeException("[assrt] Unexpected ANTLR node type: " + lab);
 		}
 	}
 }
