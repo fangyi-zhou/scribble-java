@@ -1052,13 +1052,13 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		AssrtCoreLProjection proj = (AssrtCoreLProjection) core.getContext()
 				.getProjectedInlined(fullname, self);
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = proj.statevars;
-		AssrtCoreLType tmp = proj.type;
+		AssrtCoreLType body = proj.type;
 		// Also need to collect svars from (immediately) nested recs -- i.e., svars from a subproto that actually becomes the top-level init state due to projection
-		while (tmp instanceof AssrtCoreLRec)
+		while (body instanceof AssrtCoreLRec)
 		{
-			AssrtCoreLRec cast = (AssrtCoreLRec) tmp;
+			AssrtCoreLRec cast = (AssrtCoreLRec) body;
 			svars.putAll(cast.statevars);
-			tmp = cast.body;
+			body = cast.body;
 		}
 
 		Map<AssrtIntVar, AssrtAFormula> Vself = this.V.get(self);
