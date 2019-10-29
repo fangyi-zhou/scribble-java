@@ -171,8 +171,105 @@ type <dotnet> "System.UInt32" from "..." as int;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
+// A=3,  B=12345
+global protocol Proto1(role A, role B) @"<x_A:=1> x_A>=0" {
 
-//*
+	0(z:int) from A to B;	@"z=x_A"// && z=y_B"
+	
+	do Proto1Aux(A, B);  @"<z, z>"
+}
+	
+//global protocol Proto1Aux(role A, role B) @"px_A>=0 && px_B>=0" { }
+
+global protocol Proto1Aux(role A, role B) @"<x_A:=*, y_B:=*> x_A>=0 && y_B>=0" {
+
+	choice at A
+	{
+		1() from A to B; @"x_A<5"	
+		3() from B to A; @"y_B<5"
+		do Lock(A, B);  @"<x_A+1>"
+	}
+	or
+	{
+		2() from A to B; @"x_A>=5"	
+	}
+}
+
+
+
+/*
+global protocol Lock(role A, role B, role C)
+{
+	REQ () from A to B;
+	REQ () from A to C;
+	choice at B
+	{
+		ACK () from B to A;
+		//foo () from B to C;
+		choice at C
+		{
+			ACK () from C to A;
+			REL () from A to B;
+			REL () from A to C;
+		}
+		or
+		{
+			do Lock(C, A, B);
+			//REQ () from C to A;
+			//REQ () from C to B;
+		}
+	}
+	or
+	{
+		do Lock(B, A, C); // should we set the initial clocks here?
+	}
+}
+//*/
+
+
+/*
+choice at A
+{
+	1() from A to B;
+	3() from B to C;  // C?B:3
+}
+or
+{
+	2() from A to B;
+	4() from B to C;  // C?B:4
+}
+//*/
+
+
+/*
+global protocol Lock(role A, role B, role C)
+{
+	REQ (tsrab:int) from A to B;
+	REQ (tsrac:int) from A to C; @"tsrac > tsrab"
+	choice at B
+	{
+		ACK (tsaba:int) from B to A; @"tsaba >  tsrab"
+		choice at C -> B
+		{
+			ACK (tsaca:int) from C to A; @"tsaca > tsrac"
+			REL (tsreab:int) from A to B; @"tsreab > tsrab"
+			REL (tsreac:int) from A to C; @"tsreac > tsrac"
+		}
+		or
+		{
+			//....
+			do Lock(C, A, B);
+		}
+	}
+	or
+	{
+		do Lock(B, A, C); // should we set the initial clocks here?
+	}
+}
+//*/
+
+
+/*
 global protocol Proto1(role A, role B) 
 		//@"<x:=3>"  // Bad
 		@"<x:=3> x=3"
@@ -231,15 +328,16 @@ aux global protocol Proto1Aux(role A, role B) @"<x:=0>"
 //*/
 
 
+
 /*
 global protocol Proto1(role A, role B) @"<x:=0> x>=0"
 {
 	choice at A
 	{
 		1() from A to B; @"x<5"
-		do Proto1(A, B); @"<x+1>"
+		//do Proto1(A, B); @"<x+1>"
 		//do Proto1(A, B); @"<x>"
-		//do Proto1(A, B); @"<x-1>"  // Bad -- TODO: add tests
+		do Proto1(A, B); @"<x-1>"  // Bad -- TODO: add tests
 	}	
 	or
 	{
@@ -294,6 +392,10 @@ global protocol Proto1(role A, role B) @"<x:=0> x>1"
 	do Proto1(A, B);  @"<x+1>"
 }
 //*/
+
+
+
+
 
 
 
