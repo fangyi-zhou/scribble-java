@@ -56,7 +56,11 @@ public class AssrtFormulaFactory
 	
 		return AssrtFalseFormula.FALSE;
 	}*/
-	
+
+	public static AssrtStrValFormula AssrtStrVal(String s)
+	{
+		return new AssrtStrValFormula(s);
+	}
 	
 
 	// Not (currently) parsed

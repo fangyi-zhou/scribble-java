@@ -53,6 +53,7 @@ tokens
 	INTVAR; 
 	INTVAL; 
 	NEGINTVAL; 
+	STRVAL; 
 
 	TRUE;
 	FALSE;
@@ -210,6 +211,10 @@ IDENTIFIER:
 	LETTER (LETTER | DIGIT)*
 ;  
 
+/*STRING:
+	(LETTER | DIGIT)*
+;*/
+
 NUMBER: 
 	(DIGIT)+
 ; 
@@ -219,11 +224,16 @@ variable:
 	IDENTIFIER -> ^(INTVAR IDENTIFIER)
 ; 	  
 
-num: 
+intlit: 
 	NUMBER -> ^(INTVAL NUMBER)	   
 |
 	'-' NUMBER -> ^(NEGINTVAL NUMBER)
 ; 
+	
+stringlit:
+	//'\'' str=(LETTER | DIGIT)* '\'' -> ^(STRVAL $str)
+	'\'' str=IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
+;
 
 
 root:  // Seems mandatory?  For top-level Tree?
@@ -315,7 +325,9 @@ literal:
 |
 	FALSE_KW -> ^(FALSE)
 |
-	num
+	intlit
+|
+	stringlit
 ;
 
 /*

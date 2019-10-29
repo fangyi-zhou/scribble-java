@@ -302,7 +302,7 @@ fragment SYMBOL:
 |
 	'&' | '?' | '!'  | UNDERSCORE
 |
-	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*'  // Assrt
+	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*' | '\''  // Assrt
 ;
 
 // Comes after SYMBOL due to an ANTLR syntax highlighting issue involving quotes.

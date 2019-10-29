@@ -10,6 +10,7 @@ import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrCompExpr;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrIntVal;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrIntVar;
 import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrNegExpr;
+import org.scribble.ext.assrt.parser.assertions.formula.AssrtAntlrStrVal;
 import org.scribble.parser.ScribAntlrWrapper;
 
 // "Manually" parsing instead of using an ANTLR Adaptor (cf. ScribTreeAdaptor),
@@ -58,6 +59,10 @@ public class AssrtAntlrToFormulaParser
 			case "NEGINTVAL": return AssrtAntlrIntVal.parseNegIntVal(this, ct);
 			case "FALSE":     return AssrtFalseFormula.FALSE;
 			case "TRUE":      return AssrtTrueFormula.TRUE;
+
+		case "STRVAL":
+			return AssrtAntlrStrVal.parseStrVal(this, ct);
+
 			default:          throw new RuntimeException("[assrt] Unexpected ANTLR node type: " + lab);
 		}
 	}
