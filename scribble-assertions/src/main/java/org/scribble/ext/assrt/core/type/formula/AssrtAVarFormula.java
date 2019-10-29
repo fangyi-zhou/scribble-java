@@ -64,4 +64,28 @@ public abstract class AssrtAVarFormula extends AssrtAFormula
 	{
 		return this.name; 
 	}
+
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (!(o instanceof AssrtIntVarFormula))
+		{
+			return false;
+		}
+		return super.equals(this)  // Does canEqual
+				&& this.name.equals(((AssrtIntVarFormula) o).name);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		int hash = 9461;
+		hash = 31 * hash + super.hashCode();
+		hash = 31 * hash + this.name.hashCode();
+		return hash;
+	}
 }

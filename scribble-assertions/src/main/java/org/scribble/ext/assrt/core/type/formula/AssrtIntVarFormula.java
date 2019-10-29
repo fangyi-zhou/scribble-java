@@ -56,7 +56,6 @@ public class AssrtIntVarFormula extends AssrtAVarFormula
 	{
 		int hash = 5903;
 		hash = 31 * hash + super.hashCode();
-		hash = 31 * hash + this.name.hashCode();
 		return hash;
 	}
 }
