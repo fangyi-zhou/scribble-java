@@ -90,7 +90,7 @@ public class AssrtBinCompFormula extends AssrtBFormula implements AssrtBinFormul
 	}
 
 	@Override
-	public AssrtBinCompFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBinCompFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return AssrtFormulaFactory.AssrtBinComp(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
 	}

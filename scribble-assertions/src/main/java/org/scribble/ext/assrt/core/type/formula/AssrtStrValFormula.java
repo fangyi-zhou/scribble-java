@@ -25,7 +25,7 @@ public class AssrtStrValFormula extends AssrtAFormula
 	}
 
 	@Override
-	public AssrtStrValFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)  // FIXME: mismatch between Str and ArithFormula?
+	public AssrtStrValFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)  // FIXME: mismatch between Str and ArithFormula?
 	{
 		return this;
 	}

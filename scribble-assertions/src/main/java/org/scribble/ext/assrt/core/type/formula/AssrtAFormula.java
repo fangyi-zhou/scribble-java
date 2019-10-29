@@ -9,8 +9,8 @@ public abstract class AssrtAFormula extends AssrtSmtFormula<IntegerFormula>
 
 	// Factor out with AssrtBFormula?
 	@Override
-	public abstract AssrtAFormula subs(AssrtIntVarFormula old, 
-			AssrtIntVarFormula neu);
+	public abstract AssrtAFormula subs(AssrtAVarFormula old,
+			AssrtAVarFormula neu);
 
 	// i.e., does not contain any AssrtIntVarFormula
 	public abstract boolean isConstant();

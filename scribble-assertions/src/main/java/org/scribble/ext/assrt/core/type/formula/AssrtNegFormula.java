@@ -77,7 +77,7 @@ public class AssrtNegFormula extends AssrtBFormula
 	}
 
 	@Override
-	public AssrtBFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return AssrtFormulaFactory.AssrtNeg(this.expr.subs(old, neu));
 	}

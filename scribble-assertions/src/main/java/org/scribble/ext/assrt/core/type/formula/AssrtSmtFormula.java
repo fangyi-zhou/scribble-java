@@ -17,7 +17,8 @@ public abstract class AssrtSmtFormula<F extends Formula>  // FIXME: drop java_sm
 	// Currently no redundant quantifier elimination
 	public abstract AssrtSmtFormula<F> squash();  // Needs to be here (not AssrtBoolFormula) because whole tree needs to be copied -- otherwise this.formula is inconsistent
 
-	public abstract AssrtSmtFormula<F> subs(AssrtIntVarFormula old, AssrtIntVarFormula neu);
+	public abstract AssrtSmtFormula<F> subs(AssrtAVarFormula old,
+			AssrtAVarFormula neu);
 
 	public abstract String toSmt2Formula();  // Cf. toString -- but can be useful to separate, for debugging (and printing)
 

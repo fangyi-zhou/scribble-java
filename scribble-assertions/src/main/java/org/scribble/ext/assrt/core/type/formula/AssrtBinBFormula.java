@@ -205,7 +205,7 @@ public class AssrtBinBFormula extends AssrtBFormula implements AssrtBinFormula<B
 	}
 
 	@Override
-	public AssrtBinBFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBinBFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return AssrtFormulaFactory.AssrtBinBool(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
 	}

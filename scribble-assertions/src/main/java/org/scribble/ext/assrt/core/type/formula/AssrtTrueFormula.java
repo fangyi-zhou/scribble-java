@@ -42,7 +42,7 @@ public class AssrtTrueFormula extends AssrtBFormula
 	}
 
 	@Override
-	public AssrtTrueFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtTrueFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return this;
 	}

@@ -44,7 +44,7 @@ public class AssrtLogFormula extends AssrtBFormula
 	}
 
 	@Override
-	public AssrtTrueFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtTrueFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		throw new RuntimeException("[assrt] Shouldn't get in here: " + this);
 	}

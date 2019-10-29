@@ -1,0 +1,67 @@
+package org.scribble.ext.assrt.core.type.formula;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
+import org.scribble.ext.assrt.core.type.name.AssrtPayElemType;
+import org.scribble.ext.assrt.util.JavaSmtWrapper;
+import org.sosy_lab.java_smt.api.IntegerFormulaManager;
+import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
+
+public abstract class AssrtAVarFormula extends AssrtAFormula
+{
+	public final String name; 
+
+	protected AssrtAVarFormula(String name)
+	{
+		this.name = name; 
+	}
+	
+	// i.e., to "type"
+	public abstract AssrtPayElemType<?> toName();
+
+	@Override
+	public AssrtAVarFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
+	{
+		return this.equals(old) ? neu : this;
+	}
+
+	@Override
+	public boolean isConstant()
+	{
+		return false;
+	}
+		
+	@Override
+	public String toSmt2Formula()
+	{
+		/*if (this.name.startsWith("_dum"))  // FIXME
+		{
+			throw new RuntimeException("[assrt] Use squash first: " + this);
+		}*/
+		//return "(" + this.name + ")";
+		return this.name;
+	}
+	
+	@Override
+	public IntegerFormula toJavaSmtFormula()
+	{
+		IntegerFormulaManager fmanager = JavaSmtWrapper.getInstance().ifm;
+		return fmanager.makeVariable(this.name);   
+	}
+	
+	@Override
+	public Set<AssrtIntVar> getIntVars()
+	{
+		Set<AssrtIntVar> vars = new HashSet<>();
+		vars.add(new AssrtIntVar(this.name));  // FIXME: currently may also be a role
+		return vars; 
+	}
+	
+	@Override
+	public String toString()
+	{
+		return this.name; 
+	}
+}

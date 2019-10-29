@@ -59,7 +59,7 @@ public class AssrtUnintPredicateFormula extends AssrtBFormula implements AssrtUn
 	}
 
 	@Override
-	public AssrtBFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return new AssrtUnintPredicateFormula(this.name, 
 				this.args.stream().map(a -> a.subs(old, neu)).collect(Collectors.toList()));

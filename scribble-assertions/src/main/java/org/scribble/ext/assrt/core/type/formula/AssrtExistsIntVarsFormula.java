@@ -43,7 +43,7 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	}
 
 	@Override
-	public AssrtExistsIntVarsFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtExistsIntVarsFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		if (this.vars.contains(old))
 		{

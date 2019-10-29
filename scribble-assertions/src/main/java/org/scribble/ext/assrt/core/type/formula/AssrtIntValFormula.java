@@ -27,7 +27,7 @@ public class AssrtIntValFormula extends AssrtAFormula
 	}
 
 	@Override
-	public AssrtIntValFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtIntValFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return this;
 	}
