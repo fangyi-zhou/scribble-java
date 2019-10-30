@@ -201,18 +201,13 @@ aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0 && try<=3" {
 //*/
 
 
-/*
+//*
 global protocol Proto1(role A, role B) {
-	1(x: int) from A to B; @"x=123"
-	//1(x: String) from A to B; @"x='abc'"
+	//1(x: int) from A to B; @"x=123"
+	1(x: String) from A to B; @"x='abc'"
 }
 //*/
 
-
-global protocol Proto1(role A, role B) @"<x:=0>" {
-	1(y:int) from A to B; @"y>0"
-	do Proto1(A, B); @"<y>"
-}
 
 
 /*

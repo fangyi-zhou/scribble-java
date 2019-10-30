@@ -20,7 +20,7 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	}
 
 	@Override
-	public AssrtExistsIntVarsFormula disamb(Map<AssrtIntVar, DataName> env)
+	public AssrtExistsIntVarsFormula disamb(Map<AssrtIntVar, DataName> env)  // IntVar now stands for all var types
 	{
 		throw new RuntimeException("Won't get in here: " + this);  // Not a parsed syntax
 	}

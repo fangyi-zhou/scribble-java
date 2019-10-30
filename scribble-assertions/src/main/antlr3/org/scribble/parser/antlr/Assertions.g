@@ -50,7 +50,7 @@ tokens
 	ARITHEXPR; 
 	NEGEXPR;
 
-	INTVAR; 
+	INTVAR;  // FIXME: rename Ambig
 	INTVAL; 
 	NEGINTVAL; 
 	STRVAL; 
