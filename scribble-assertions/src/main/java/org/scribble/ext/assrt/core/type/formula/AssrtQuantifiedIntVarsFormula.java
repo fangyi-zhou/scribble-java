@@ -9,11 +9,14 @@ import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 public abstract class AssrtQuantifiedIntVarsFormula extends AssrtBFormula
 {
-	public final List<AssrtIntVarFormula> vars;
+	//public final List<AssrtIntVarFormula> vars;
+	public final List<AssrtAVarFormula> vars;
 	public final AssrtBFormula expr;
 
 	// Pre: vars non empty
-	protected AssrtQuantifiedIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	//protected AssrtQuantifiedIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	protected AssrtQuantifiedIntVarsFormula(List<AssrtAVarFormula> vars,
+			AssrtBFormula expr)
 	{
 		this.vars = Collections.unmodifiableList(vars);
 		this.expr = expr;

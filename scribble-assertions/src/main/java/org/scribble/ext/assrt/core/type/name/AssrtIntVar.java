@@ -3,6 +3,8 @@ package org.scribble.ext.assrt.core.type.name;
 import org.scribble.core.type.name.AbstractName;
 import org.scribble.ext.assrt.core.type.kind.AssrtIntVarKind;
 
+// FIXME: AssrtIntVar a different syntactic category than the SmtFormula vars --
+// unify?
 // FIXME: now Strings introduced, rename to AssrtAVar, i.e., generic var (and
 // record type?) -- also String formulae coming under AFormula, fix
 public class AssrtIntVar extends AbstractName<AssrtIntVarKind>

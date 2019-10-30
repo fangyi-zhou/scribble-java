@@ -14,7 +14,9 @@ import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 {
 	// Pre: vars non empty
-	protected AssrtExistsIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	//protected AssrtExistsIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	protected AssrtExistsIntVarsFormula(List<AssrtAVarFormula> vars,
+			AssrtBFormula expr)
 	{
 		super(vars, expr);
 	}
@@ -46,10 +48,12 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	public AssrtBFormula squash()
 	{
-		List<AssrtIntVarFormula> vars
-				= this.vars.stream().filter(v -> !v.toString().startsWith("_dum")).collect(Collectors.toList());  // FIXME
+		List<AssrtAVarFormula> vars = this.vars.stream()
+				.filter(v -> !v.toString().startsWith("_dum"))
+				.collect(Collectors.toList());  // FIXME
 		AssrtBFormula expr = this.expr.squash();
-		return (vars.isEmpty()) ? expr : AssrtFormulaFactory.AssrtExistsFormula(vars, expr);
+		return vars.isEmpty() ? expr
+				: AssrtFormulaFactory.AssrtExistsFormula(vars, expr);
 	}
 
 	@Override

@@ -14,7 +14,9 @@ import org.sosy_lab.java_smt.api.QuantifiedFormulaManager;
 public class AssrtForallIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 {
 	// Pre: vars non empty
-	protected AssrtForallIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	//protected AssrtForallIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	protected AssrtForallIntVarsFormula(List<AssrtAVarFormula> vars,
+			AssrtBFormula expr)
 	{
 		super(vars, expr);
 	}
@@ -46,8 +48,9 @@ public class AssrtForallIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	public AssrtBFormula squash()
 	{
-		List<AssrtIntVarFormula> vars
-				= this.vars.stream().filter(v -> !v.toString().startsWith("_dum")).collect(Collectors.toList());  // FIXME
+		List<AssrtAVarFormula> vars = this.vars.stream()
+				.filter(v -> !v.toString().startsWith("_dum"))
+				.collect(Collectors.toList());  // FIXME
 		AssrtBFormula expr = this.expr.squash();
 		return (vars.isEmpty()) ? expr : AssrtFormulaFactory.AssrtForallFormula(vars, expr);
 	}

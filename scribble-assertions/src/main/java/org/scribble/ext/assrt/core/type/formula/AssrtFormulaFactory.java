@@ -75,12 +75,16 @@ public class AssrtFormulaFactory
 
 	// Not (currently) parsed
 	
-	public static AssrtExistsIntVarsFormula AssrtExistsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	//public static AssrtExistsIntVarsFormula AssrtExistsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	public static AssrtExistsIntVarsFormula AssrtExistsFormula(
+			List<AssrtAVarFormula> vars, AssrtBFormula expr)
 	{
 		return new AssrtExistsIntVarsFormula(vars, expr); 
 	}
 
-	public static AssrtForallIntVarsFormula AssrtForallFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	//public static AssrtForallIntVarsFormula AssrtForallFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	public static AssrtForallIntVarsFormula AssrtForallFormula(
+			List<AssrtAVarFormula> vars, AssrtBFormula expr)
 	{
 		return new AssrtForallIntVarsFormula(vars, expr); 
 	}
