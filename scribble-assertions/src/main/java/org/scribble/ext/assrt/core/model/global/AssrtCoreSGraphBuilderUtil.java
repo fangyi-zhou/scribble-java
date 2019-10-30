@@ -1,5 +1,6 @@
 package org.scribble.ext.assrt.core.model.global;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,7 +43,10 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 				makeK(P.keySet()), makeF(P),
 				//P.keySet().stream().collect(Collectors.toMap(r -> r, r -> new HashMap<>()))
 				//makeScopes(P), 
-				makeV(P), makeR(P)
+				makeV(P), makeR(P),
+
+				Collections.emptyMap()
+
 				);
 	}
 

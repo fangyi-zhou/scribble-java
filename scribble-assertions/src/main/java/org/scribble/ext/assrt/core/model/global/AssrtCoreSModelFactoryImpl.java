@@ -11,6 +11,7 @@ import org.scribble.core.model.global.SGraph;
 import org.scribble.core.model.global.SModelFactoryImpl;
 import org.scribble.core.model.global.SSingleBuffers;
 import org.scribble.core.model.global.SState;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.MsgId;
 import org.scribble.core.type.name.Role;
@@ -55,11 +56,16 @@ public class AssrtCoreSModelFactoryImpl extends SModelFactoryImpl //AssrtSModelF
 	public AssrtCoreSConfig AssrtCoreSConfig(Map<Role, EFsm> P, SSingleBuffers Q,
 			Map<Role, Set<AssrtIntVar>> K,
 			Map<Role, Set<AssrtBFormula>> F, Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
-			Map<Role, Set<AssrtBFormula>> R)
+			Map<Role, Set<AssrtBFormula>> R,
+
+			Map<AssrtIntVar, DataName> Env
+
+	)
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename
 			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes)
 	{
 		return new AssrtCoreSConfig(this.mf, P, Q, K, F, V, R //rename, scopes
+				, Env
 				);
 	}
 

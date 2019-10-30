@@ -7,6 +7,7 @@ import java.util.Set;
 import org.scribble.core.model.endpoint.EFsm;
 import org.scribble.core.model.global.SModelFactory;
 import org.scribble.core.model.global.SSingleBuffers;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.MsgId;
 import org.scribble.core.type.name.Role;
 import org.scribble.core.type.session.Payload;
@@ -44,7 +45,10 @@ public interface AssrtCoreSModelFactory extends SModelFactory
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename
 			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes, 
 			Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
-			Map<Role, Set<AssrtBFormula>> R
+			Map<Role, Set<AssrtBFormula>> R,
+
+			Map<AssrtIntVar, DataName> Env
+
 			);
 	AssrtCoreSModel AssrtCoreSModel(AssrtCore core, AssrtCoreSGraph graph);
 	
