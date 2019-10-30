@@ -8,7 +8,7 @@ global protocol OAuth (role C, role S, role A) {
   do Auth(C, S, A); @"<0>"
 }
 
-aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0 && try<=3" {
+aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0" {
   password(pwd: int) from C to A;
   choice at A {
     authed() from A to S;
