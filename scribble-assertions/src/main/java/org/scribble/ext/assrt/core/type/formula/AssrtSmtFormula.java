@@ -16,7 +16,7 @@ public abstract class AssrtSmtFormula<F extends Formula>  // FIXME: drop java_sm
 	protected F formula;   // "Cached" translation to JavaSMT API -- apart from AssrtLogFormula, which is just a wrapper for JavaSMT 
 			// Mostly not used for equals/hashCode -- except for AssrtLogFormula (and has to be used via toString)
 
-	public abstract AssrtSmtFormula<F> disamb(Map<AssrtIntVar, DataName> env);
+	public abstract AssrtSmtFormula<F> disamb(Map<AssrtIntVar, DataName> env);  // FIXME: throws ScribException -- e.g., WF errors (getInlined comes before current WF pass)
 
 	// Currently no redundant quantifier elimination
 	public abstract AssrtSmtFormula<F> squash();  // Needs to be here (not AssrtBoolFormula) because whole tree needs to be copied -- otherwise this.formula is inconsistent

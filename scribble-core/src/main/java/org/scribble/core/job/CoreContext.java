@@ -115,6 +115,7 @@ public class CoreContext
 	}*/
 	
 	public GProtocol getInlined(ProtoName<Global> fullname)
+	//throws ScribException  // TODO: consider, want to potentially throw on "first" inlining for syntax/WF errors, but subsequent getter calls shouldn't
 	{
 		GProtocol inlined = this.inlined.get(fullname);
 		if (inlined == null)

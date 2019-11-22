@@ -97,7 +97,7 @@ public class AssrtCore extends Core
 	public void runPasses() throws ScribException
 	{
 		runSyntaxTransformPasses();
-		runGlobalSyntaxWfPasses();
+		runGlobalSyntaxWfPasses();  // TODO: consider WF problems that prevent inlining above (e.g., distinct annot vars, AssrtCoreContextget.Inlined)
 		runProjectionPasses();  // CHECKME: can try before validation (i.e., including syntactic WF), to promote greater tool feedback? (cf. CommandLine output "barrier")
 		//runProjectionSyntaxWfPasses();
 		runEfsmBuildingPasses();  // Currently, unfair-transform graph building must come after syntactic WF --- TODO fix graph building to prevent crash ?

@@ -22,7 +22,7 @@ public interface AssrtCoreGType extends AssrtCoreSType<Global, AssrtCoreGType>
 	
 	// CHECKME: refactor as visitors? -- base Core visitor pattern not currently ported
 
-	AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env);
+	AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env);  // FIXME: throw ScribbleException, WF errors
 	
 	// CHECKME: some may need to be factored up to base
 	AssrtCoreGType substitute(AssrtCore core, Substitutions subs);

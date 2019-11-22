@@ -208,6 +208,12 @@ global protocol Proto1(role A, role B) {
 }
 //*/
 
+//*  // FIXME: statevar syntax, sorts -- e.g., cf. AssrtCore.getInlined, statevars
+global protocol Proto2(role A, role B) { @"<y:='def'>"
+	1(x: String) from A to B; @"x='abc'"
+}
+//*/
+
 
 
 /*
