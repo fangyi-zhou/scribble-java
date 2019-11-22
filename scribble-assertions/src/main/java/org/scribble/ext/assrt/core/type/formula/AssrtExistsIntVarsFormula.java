@@ -72,7 +72,23 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	public String toSmt2Formula()
 	{
-		String vs = this.vars.stream().map(v -> "(" + v.toSmt2Formula() + " Int)").collect(Collectors.joining(" "));
+		String vs = this.vars.stream()
+				.map(v ->
+					{
+						if (v instanceof AssrtIntVarFormula)
+						{
+							return "(" + v.toSmt2Formula() + " Int)";
+						}
+						else if (v instanceof AssrtStrVarFormula)
+						{
+							return "(" + v.toSmt2Formula() + " String)";
+						}
+						else
+						{
+							throw new RuntimeException("Unknown var type: " + v.getClass());
+						}
+					})
+				.collect(Collectors.joining(" "));
 		String expr = this.expr.toSmt2Formula();
 		return "(exists (" + vs + ") " + expr + ")";
 	}
