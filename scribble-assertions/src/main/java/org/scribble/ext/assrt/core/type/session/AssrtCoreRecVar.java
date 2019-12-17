@@ -2,14 +2,17 @@ package org.scribble.ext.assrt.core.type.session;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.ProtoKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.RecVar;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 
 public abstract class AssrtCoreRecVar<K extends ProtoKind, 
@@ -32,6 +35,12 @@ public abstract class AssrtCoreRecVar<K extends ProtoKind,
 			Function<AssrtCoreSType<K, B>, Stream<T>> f)
 	{
 		return f.apply(this);
+	}
+
+	@Override
+	public Map<AssrtIntVar, DataName> getSortEnv()
+	{
+		return Collections.emptyMap();
 	}
 
 	@Override 

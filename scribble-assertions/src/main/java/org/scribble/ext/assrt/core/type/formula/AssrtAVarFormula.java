@@ -1,13 +1,16 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
+// FIXME: not just "A" anymore, e.g., String sort
 public abstract class AssrtAVarFormula extends AssrtAFormula
 {
 	public final String name; 
@@ -34,7 +37,7 @@ public abstract class AssrtAVarFormula extends AssrtAFormula
 	}
 		
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		/*if (this.name.startsWith("_dum"))  // FIXME
 		{

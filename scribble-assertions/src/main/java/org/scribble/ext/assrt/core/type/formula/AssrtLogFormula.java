@@ -58,7 +58,7 @@ public class AssrtLogFormula extends AssrtBFormula
 	}
 		
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		throw new RuntimeException("[assrt] Shouldn't get in here: " + this);
 	}

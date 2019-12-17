@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,13 +13,16 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.scribble.core.lang.global.GProtocol;
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.job.AssrtCore;
+import org.scribble.ext.assrt.core.lang.global.AssrtCoreGProtocol;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtQuantifiedIntVarsFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtSmtFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtUnintPredicateFormula;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.util.ScribException;
 import org.scribble.util.ScribUtil;
 
@@ -27,7 +31,7 @@ public class Z3Wrapper
 {
 
 	// Based on CommandLine::runDot, JobContext::runAut, etc
-	public static boolean checkSat(AssrtCore core, GProtocol gproto,
+	public static boolean checkSat(AssrtCore core, GProtocol intermed,
 			Set<AssrtBFormula> bforms)  //throws ScribbleException
 	{
 		bforms = bforms.stream().filter(f -> !f.equals(AssrtTrueFormula.TRUE))
@@ -37,7 +41,12 @@ public class Z3Wrapper
 			return true;
 		}
 
-		String smt2 = toSmt2(gproto, bforms);
+		Map<AssrtIntVar, DataName> sorts = /*((AssrtCoreGProtocol) core.getContext()
+																				.getInlined(intermed.fullname)).type
+																				.getSortEnv();*/
+				((AssrtCoreGProtocol) core.getContext()
+						.getInlined(intermed.fullname)).getSortEnv();
+		String smt2 = toSmt2(intermed, bforms, sorts);
 
 		core.verbosePrintln(
 				"[assrt-core] Running Z3 on:\n  " + smt2.replaceAll("\\n", "\n  "));
@@ -87,10 +96,11 @@ public class Z3Wrapper
 	}
 	
 	// fs shouldn't be empty (but OK)
-	private static String toSmt2(GProtocol gproto, Set<AssrtBFormula> bforms)
+	private static String toSmt2(GProtocol intermed, Set<AssrtBFormula> bforms,
+			Map<AssrtIntVar, DataName> env)
 	{
 		String smt2 = "";
-		List<String> rs = gproto.roles.stream().map(Object::toString).sorted()
+		List<String> rs = intermed.roles.stream().map(Object::toString).sorted()
 				.collect(Collectors.toList());
 		smt2 += IntStream
 				.range(0, rs.size()).mapToObj(i -> "(declare-const " + rs.get(i)
@@ -113,7 +123,7 @@ public class Z3Wrapper
 		}
 		
 		return smt2
-				+ bforms.stream().map(f -> "(assert " + f.toSmt2Formula() + ")\n")
+				+ bforms.stream().map(f -> "(assert " + f.toSmt2Formula(env) + ")\n")
 						.collect(Collectors.joining())
 				+ "(check-sat)\n"
 				+ "(exit)";

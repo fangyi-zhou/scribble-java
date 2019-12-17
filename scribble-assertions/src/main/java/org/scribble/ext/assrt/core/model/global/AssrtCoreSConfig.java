@@ -29,6 +29,7 @@ import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.PayElemType;
 import org.scribble.core.type.name.Role;
 import org.scribble.ext.assrt.core.job.AssrtCore;
+import org.scribble.ext.assrt.core.lang.global.AssrtCoreGProtocol;
 import org.scribble.ext.assrt.core.lang.local.AssrtCoreLProjection;
 import org.scribble.ext.assrt.core.model.endpoint.AssrtCoreEModelFactory;
 import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreEAcc;
@@ -765,6 +766,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					return false;  // CHECKME: input-side assertions? currently hardcoded to True
 				}
 			};
+
 			Set<AssrtCoreEAction> tmp = curr.getDetActions().stream()
 					.filter(x -> isErr.test(x)).map(x -> (AssrtCoreEAction) x)
 					.collect(Collectors.toSet());
@@ -782,6 +784,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			GProtoName fullname)
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
+		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname)).type.getSortEnv();
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -797,7 +801,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 
 			core.verbosePrintln("\n[assrt-core] Checking assertion progress for "
 					+ self + "(" + curr.id + "):");
-			core.verbosePrintln("  squashed = " + squashed.toSmt2Formula());
+			core.verbosePrintln("  squashed = " + squashed.toSmt2Formula(sorts));
 			if (!core.checkSat(fullname,
 					Stream.of(squashed).collect(Collectors.toSet())))
 			{
@@ -898,11 +902,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			switch (d.data.toString()) // TODO: refactor
 			{
 			case "int":
+			case "String":
 				assVars.add(AssrtFormulaFactory.AssrtIntVar(d.var.toString()));
 				break;
-			case "String":
-				assVars.add(AssrtFormulaFactory.AssrtStrVar(d.var.toString()));
-				break;
+			/*assVars.add(AssrtFormulaFactory.AssrtStrVar(d.var.toString()));
+			break;*/
 			default:
 				throw new RuntimeException(
 						"[assrt-core] Unsupported data type: " + d.data);
@@ -924,6 +928,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, Set<AssrtCoreEAction>> getAssertUnsatErrors(AssrtCore core,
 			GProtoName fullname)
 	{
+		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname)).type.getSortEnv();
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -964,7 +970,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				core.verbosePrintln(
 						"\n[assrt-core] Checking assertion satisfiability for " + self
 								+ "(" + curr.id + "):");
-				core.verbosePrintln("  squashed = " + squashed.toSmt2Formula());
+				core.verbosePrintln("  squashed = " + squashed.toSmt2Formula(sorts));
 				if (!core.checkSat(fullname,
 						Stream.of(squashed).collect(Collectors.toSet())))
 				{
@@ -1076,6 +1082,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, AssrtEState> getInitRecAssertErrors(AssrtCore core,
 			GProtoName fullname)
 	{
+		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname)).type.getSortEnv();
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1090,7 +1098,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			core.verbosePrintln(
 					"\n[assrt-core] Checking initial recursion assertion for " + self
 							+ "(" + curr.id + "):");
-			core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula());
+			core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula(sorts));
 			if (!core.checkSat(fullname,
 					Stream.of(toCheck).collect(Collectors.toSet())))
 			{
@@ -1173,6 +1181,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, Set<AssrtCoreEAction>> getRecAssertErrors(AssrtCore core,
 			GProtoName fullname)
 	{
+		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname)).type.getSortEnv();
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1190,7 +1200,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					
 				core.verbosePrintln("\n[assrt-core] Checking recursion assertion for "
 						+ self + "(" + curr.id + "):");
-				core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula());
+					core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula(sorts));
 				boolean b = core.checkSat(fullname,
 						Stream.of(toCheck).collect(Collectors.toSet()));
 				core.verbosePrintln("");
@@ -1581,8 +1591,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		if (!free.isEmpty())
 		{
 			List<AssrtAVarFormula> tmp = free.stream()
-					.map(x -> (x.sort.equals("String")  // Cast needed?
-							? AssrtFormulaFactory.AssrtStrVar(x.toString()) : AssrtFormulaFactory.AssrtIntVar(x.toString())))
+					.map(
+							x -> (/*x.sort.equals("String")  // Cast needed?
+										? AssrtFormulaFactory.AssrtStrVar(x.toString()) :*/ AssrtFormulaFactory.AssrtIntVar(x.toString())))
 					// e.g., convert from AssrtIntVar to AssrtIntVarFormula // FIXME: factor out constants, int default dodgy
 					.collect(Collectors.toList());
 			bform = AssrtFormulaFactory.AssrtForallFormula(tmp, bform);

@@ -74,10 +74,10 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String left = this.left.toSmt2Formula();
-		String right = this.right.toSmt2Formula();
+		String left = this.left.toSmt2Formula(env);
+		String right = this.right.toSmt2Formula(env);
 		String op;
 		switch(this.op)
 		{

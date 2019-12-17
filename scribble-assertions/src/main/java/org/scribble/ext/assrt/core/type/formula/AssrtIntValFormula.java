@@ -47,7 +47,7 @@ public class AssrtIntValFormula extends AssrtAFormula
 	}
 		
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		//return "(" + Integer.toString(this.val) + ")";
 		return Integer.toString(this.val);

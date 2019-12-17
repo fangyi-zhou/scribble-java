@@ -5,10 +5,13 @@ import java.util.Map;
 import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
+// TODO: integrate with AssrtIntVar
 // Variable occurrence
 // FIXME: currently also used for roles -- probably need to parse as "ambig" and disamb later
 public class AssrtIntVarFormula extends AssrtAVarFormula
 {
+	// TODO: sort field -- cf. AssrtIntVar -- and deprecate AssrtStrVarFormula
+
 	protected AssrtIntVarFormula(String name)
 	{
 		super(name);
@@ -24,7 +27,7 @@ public class AssrtIntVarFormula extends AssrtAVarFormula
 	@Override
 	public AssrtIntVar toName()
 	{
-		return new AssrtIntVar(this.name, "int");
+		return new AssrtIntVar(this.name);
 	}
 
 	@Override

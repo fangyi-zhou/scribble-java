@@ -91,9 +91,9 @@ public class AssrtNegFormula extends AssrtBFormula
 	}
 
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		return "(not " + this.expr.toSmt2Formula() + ")";
+		return "(not " + this.expr.toSmt2Formula(env) + ")";
 	}
 
 	@Override

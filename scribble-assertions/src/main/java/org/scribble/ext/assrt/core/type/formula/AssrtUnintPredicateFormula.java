@@ -74,9 +74,10 @@ public class AssrtUnintPredicateFormula extends AssrtBFormula implements AssrtUn
 	}
 
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		return "(" + this.name + " " + this.args.stream().map(a -> a.toSmt2Formula()).collect(Collectors.joining(" ")) + ")";
+		return "(" + this.name + " " + this.args.stream()
+				.map(a -> a.toSmt2Formula(env)).collect(Collectors.joining(" ")) + ")";
 	}
 
 	@Override

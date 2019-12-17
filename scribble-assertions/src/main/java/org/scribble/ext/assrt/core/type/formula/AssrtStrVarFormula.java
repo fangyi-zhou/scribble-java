@@ -6,9 +6,10 @@ import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 // FIXME: factor out with Int -- record "type" as a field
+@Deprecated
 public class AssrtStrVarFormula extends AssrtAVarFormula
 {
-	protected AssrtStrVarFormula(String name)
+	private AssrtStrVarFormula(String name)
 	{
 		super(name);
 	}
@@ -23,13 +24,14 @@ public class AssrtStrVarFormula extends AssrtAVarFormula
 	@Override
 	public AssrtIntVar toName()
 	{
-		return new AssrtIntVar(this.name, "String");
+		return new AssrtIntVar(this.name);
 	}
 
 	@Override
 	public AssrtStrVarFormula squash()
 	{
-		return AssrtFormulaFactory.AssrtStrVar(this.name);
+		//return AssrtFormulaFactory.AssrtStrVar(this.name);
+		throw new RuntimeException("Shouldn't get in here: " + this);
 	}
 	
 	@Override

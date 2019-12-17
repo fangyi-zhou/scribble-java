@@ -15,6 +15,7 @@ package org.scribble.ext.assrt.core.lang.global;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -25,6 +26,7 @@ import org.scribble.core.lang.global.GProtocol;
 import org.scribble.core.lang.local.LProjection;
 import org.scribble.core.type.kind.Global;
 import org.scribble.core.type.kind.NonRoleParamKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.LProtoName;
 import org.scribble.core.type.name.MemberName;
@@ -68,6 +70,24 @@ public class AssrtCoreGProtocol extends GProtocol
 		this.type = type;
 		this.statevars = new LinkedHashMap<>(svars);  // TODO: unmod
 		this.assertion = assrt;
+	}
+
+	public Map<AssrtIntVar, DataName> getSortEnv()
+	{
+		Map<AssrtIntVar, DataName> sorts = this.type.getSortEnv();
+		sorts.putAll(this.statevars.keySet().stream()
+				.collect(Collectors.toMap(x -> x, x -> new DataName("int"))));  // FIXME: statevar sorts
+		/*sorts.putAll(this.statevars.keySet().stream()
+				.collect(
+						Collectors.toMap(x -> new AssrtIntVar("_" + x.toString(), "FIXME"),
+								x -> new DataName("int"))));  // FIXME HACK*/
+		/*Map<AssrtIntVar, DataName> res = new HashMap<>(sorts); // FIXME HACK
+		res.putAll(sorts.entrySet().stream()
+				.collect(Collectors.toMap(
+						x -> new AssrtIntVar("_" + x.getKey().toString(), "FIXME"),
+						x -> x.getValue())));
+		return res;*/
+		return sorts;
 	}
 
 	// Deprecated because no longer using GSeq def

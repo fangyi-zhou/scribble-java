@@ -1,12 +1,14 @@
 package org.scribble.ext.assrt.core.type.session;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.ProtoKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.RecVar;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
@@ -37,6 +39,15 @@ public abstract class AssrtCoreRec<K extends ProtoKind,
 			Function<AssrtCoreSType<K, B>, Stream<T>> f)
 	{
 		return Stream.concat(f.apply(this), this.body.assrtCoreGather(f));
+	}
+
+	@Override
+	public Map<AssrtIntVar, DataName> getSortEnv()
+	{
+		Map<AssrtIntVar, DataName> sorts = this.body.getSortEnv();
+		/*sorts.putAll(statevars.keySet().stream()
+				.collect(Collectors.toMap(x -> x, x -> new DataName("int"))));  // FIXME: statevar sorts*/
+		return sorts;
 	}
 	
 	@Override

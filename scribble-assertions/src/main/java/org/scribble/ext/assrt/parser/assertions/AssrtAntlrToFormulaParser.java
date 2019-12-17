@@ -61,7 +61,7 @@ public class AssrtAntlrToFormulaParser
 		//case "UNFUN":     return AssrtAntlrUnFun.parseUnFun(this, ct);
 		case "INTVAR":  // FIXME: rename Ambig
 			//return AssrtAntlrIntVar.parseIntVar(this, ct);
-			return AssrtAntlrAmbigVar.parseAmbigVar(this, ct);
+			return AssrtAntlrAmbigVar.parseAmbigVar(this, ct);  // FIXME: deprecate ambig (all should be IntVar now)
 		case "INTVAL":
 			return AssrtAntlrIntVal.parseIntVal(this, ct);
 		case "NEGINTVAL":

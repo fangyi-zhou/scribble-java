@@ -99,7 +99,7 @@ public class AssrtCoreContext extends CoreContext
 				tmp = foo.body;
 			}*/
 
-			AssrtCoreGType body = cast.type.disamb((AssrtCore) core, env);
+			AssrtCoreGType body = cast.type.disamb((AssrtCore) this.core, env);
 			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
 			cast.statevars.entrySet().forEach(x -> svars.put(x.getKey(),
 					(AssrtAFormula) x.getValue().disamb(env)));  // Unnecessary, disallow mutual var refs?

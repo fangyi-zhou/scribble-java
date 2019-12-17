@@ -8,7 +8,9 @@ import java.util.stream.Stream;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.ProtoKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.Role;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 // TODO: rename directed choice
 public abstract class AssrtCoreChoice<K extends ProtoKind, 
@@ -38,7 +40,18 @@ public abstract class AssrtCoreChoice<K extends ProtoKind,
 				this.cases.values().stream().flatMap(x -> x.assrtCoreGather(f)));
 	}
 
-	
+	@Override
+	public Map<AssrtIntVar, DataName> getSortEnv()
+	{
+		Map<AssrtIntVar, DataName> res = this.cases.keySet().stream()
+				.flatMap(x -> x.pay.stream())
+				.collect(Collectors.toMap(x -> x.var, x -> x.data));
+		res.putAll(this.cases.values().stream()
+				.flatMap(x -> x.getSortEnv().entrySet().stream())
+				.collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())));
+		return res;
+	}
+
 	public abstract AssrtCoreActionKind<K> getKind();
 	
 	@Override

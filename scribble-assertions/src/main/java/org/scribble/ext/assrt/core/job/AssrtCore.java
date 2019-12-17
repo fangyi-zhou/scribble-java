@@ -15,6 +15,7 @@ package org.scribble.ext.assrt.core.job;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ import org.scribble.core.model.endpoint.EModelFactory;
 import org.scribble.core.model.global.SGraph;
 import org.scribble.core.model.global.SModelFactory;
 import org.scribble.core.type.kind.Global;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.ModuleName;
 import org.scribble.core.type.name.ProtoName;
@@ -221,8 +223,10 @@ public class AssrtCore extends Core
 			}
 			case NONE:
 			{
+			Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) getContext()
+					.getInlined(fullname)).type.getSortEnv();
 				verbosePrintln("\n[assrt-core] [WARNING] Skipping sat check:\n\t"
-						+ bforms.stream().map(f -> f.toSmt2Formula() + "\n\t")
+					+ bforms.stream().map(f -> f.toSmt2Formula(sorts) + "\n\t")
 								.collect(Collectors.joining("")));
 				return true;
 			}

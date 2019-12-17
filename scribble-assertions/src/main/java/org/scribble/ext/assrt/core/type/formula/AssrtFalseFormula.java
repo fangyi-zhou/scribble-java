@@ -55,7 +55,7 @@ public class AssrtFalseFormula extends AssrtBFormula
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		return "false";
 	}

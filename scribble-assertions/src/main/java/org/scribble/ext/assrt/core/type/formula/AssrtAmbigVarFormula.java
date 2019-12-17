@@ -7,6 +7,7 @@ import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
+// TODO deprecate -- All vars should now be AssrtIntVar (and rename from Int)
 public class AssrtAmbigVarFormula extends AssrtAVarFormula
 {
 	protected AssrtAmbigVarFormula(String name)
@@ -24,9 +25,9 @@ public class AssrtAmbigVarFormula extends AssrtAVarFormula
 		switch (type)  // HACK
 		{
 		case "int":
-			return new AssrtIntVarFormula(name);
 		case "String":
-			return new AssrtStrVarFormula(name);
+			return new AssrtIntVarFormula(name);
+		//return new AssrtStrVarFormula(name);
 		default:
 			throw new RuntimeException("Unsupported payload/state var type: " +
 					type);

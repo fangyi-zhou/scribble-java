@@ -62,10 +62,10 @@ public class AssrtFormulaFactory
 		return new AssrtStrValFormula(s);
 	}
 
-	public static AssrtStrVarFormula AssrtStrVar(String text)
+	/*public static AssrtStrVarFormula AssrtStrVar(String text)
 	{
 		return new AssrtStrVarFormula(text);
-	}
+	}*/
 
 	public static AssrtAmbigVarFormula AssrtAmbigVar(String text)
 	{
