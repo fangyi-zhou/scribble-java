@@ -45,6 +45,7 @@ public class RecVar extends AbstractName<RecVarKind> //implements PathElement
 		return n.canEquals(this) && super.equals(o);
 	}
 	
+	@Override
 	public boolean canEquals(Object o)
 	{
 		return o instanceof RecVar;
@@ -54,7 +55,7 @@ public class RecVar extends AbstractName<RecVarKind> //implements PathElement
 	public int hashCode()
 	{
 		int hash = 2819;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
 		return hash;
 	}
 }

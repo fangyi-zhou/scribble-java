@@ -483,7 +483,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 					throw new AssrtCoreSyntaxException(e.getSource(),
 							"[assrt-core] Non- datatype kind payload not supported: " + e);
 				}
-				res.add(new AssrtAnnotDataName(makeFreshDataTypeVar(), (DataName) e1));
+				res.add(new AssrtAnnotDataName(makeFreshDataTypeVar(), (DataName) e1));  // FIXME: default hardcoded to "int"
 			}
 		}
 		return res;
@@ -533,7 +533,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 	
 	private static AssrtIntVar makeFreshDataTypeVar()
 	{
-		return new AssrtIntVar("_dum" + varCounter++);
+		return new AssrtIntVar("_dum" + varCounter++, "int");
 	}
 
 	private static String makeFreshRecVarName()

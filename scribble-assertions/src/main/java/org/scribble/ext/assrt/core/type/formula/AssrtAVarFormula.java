@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
-import org.scribble.ext.assrt.core.type.name.AssrtPayElemType;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
@@ -19,7 +18,8 @@ public abstract class AssrtAVarFormula extends AssrtAFormula
 	}
 	
 	// i.e., to "type"
-	public abstract AssrtPayElemType<?> toName();
+	public abstract //AssrtPayElemType<?> 
+	AssrtIntVar toName();
 
 	@Override
 	public AssrtAVarFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
@@ -55,7 +55,7 @@ public abstract class AssrtAVarFormula extends AssrtAFormula
 	public Set<AssrtIntVar> getIntVars()
 	{
 		Set<AssrtIntVar> vars = new HashSet<>();
-		vars.add(new AssrtIntVar(this.name));  // FIXME: currently may also be a role
+		vars.add(toName());  // FIXME: currently may also be a role
 		return vars; 
 	}
 	

@@ -6,15 +6,18 @@ import org.scribble.ext.assrt.core.type.kind.AssrtIntVarKind;
 // FIXME: AssrtIntVar a different syntactic category than the SmtFormula vars --
 // unify?
 // FIXME: now Strings introduced, rename to AssrtAVar, i.e., generic var (and
-// record type?) -- also String formulae coming under AFormula, fix
+// record sort?) -- also String formulae coming under AFormula, fix
 public class AssrtIntVar extends AbstractName<AssrtIntVarKind>
 		implements AssrtPayElemType<AssrtIntVarKind>
 {
 	private static final long serialVersionUID = 1L;
 
-	public AssrtIntVar(String simplename)
+	public final String sort; // TODO: refactor -- // CHECKME: AssrtSort?
+
+	public AssrtIntVar(String simplename, String sort)
 	{
 		super(AssrtIntVarKind.KIND, simplename);
+		this.sort = sort;
 	}
 
 	@Override
@@ -28,7 +31,8 @@ public class AssrtIntVar extends AbstractName<AssrtIntVarKind>
 		{
 			return false;
 		}
-		return super.equals(o);  // Checks canEquals
+		return super.equals(o)  // Checks canEquals
+				&& this.sort.equals(((AssrtIntVar) o).sort);
 	}
 	
 	@Override
@@ -41,7 +45,8 @@ public class AssrtIntVar extends AbstractName<AssrtIntVarKind>
 	public int hashCode()
 	{
 		int hash = 5519;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
+		hash = 31 * hash + this.sort.hashCode();
 		return hash;
 	}
 	

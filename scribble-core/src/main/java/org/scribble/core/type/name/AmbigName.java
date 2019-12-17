@@ -49,6 +49,7 @@ public class AmbigName extends AbstractName<AmbigKind>
 		return n.canEquals(this) && super.equals(o);
 	}
 	
+	@Override
 	public boolean canEquals(Object o)
 	{
 		return o instanceof AmbigName;
@@ -58,7 +59,7 @@ public class AmbigName extends AbstractName<AmbigKind>
 	public int hashCode()
 	{
 		int hash = 4073;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
 		return hash;
 	}
 }

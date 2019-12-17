@@ -19,12 +19,12 @@ public class AssrtIntVarFormula extends AssrtAVarFormula
 	{
 		throw new RuntimeException("Won't get in here: " + this);  // Should not be re-disambiguating 
 	}
-	
+
 	// i.e., to "type"
 	@Override
 	public AssrtIntVar toName()
 	{
-		return new AssrtIntVar(this.name);
+		return new AssrtIntVar(this.name, "int");
 	}
 
 	@Override

@@ -22,7 +22,7 @@ public class AssrtCoreGProtoDeclTranslator
 	
 	private static AssrtIntVar makeFreshDataTypeVar()
 	{
-		return new AssrtIntVar("_dum" + varCounter++);
+		return new AssrtIntVar("_dum" + varCounter++, "int");
 	}
 
 	private static String makeFreshRecVarName()

@@ -1580,10 +1580,12 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				.collect(Collectors.toSet());
 		if (!free.isEmpty())
 		{
-			bform = AssrtFormulaFactory.AssrtForallFormula(
-					free.stream().map(v -> AssrtFormulaFactory.AssrtIntVar(v.toString()))
-							.collect(Collectors.toList()),
-					bform);
+			List<AssrtAVarFormula> tmp = free.stream()
+					.map(x -> (x.sort.equals("String")  // Cast needed?
+							? AssrtFormulaFactory.AssrtStrVar(x.toString()) : AssrtFormulaFactory.AssrtIntVar(x.toString())))
+					// e.g., convert from AssrtIntVar to AssrtIntVarFormula // FIXME: factor out constants, int default dodgy
+					.collect(Collectors.toList());
+			bform = AssrtFormulaFactory.AssrtForallFormula(tmp, bform);
 		}
 		return bform;
 	}

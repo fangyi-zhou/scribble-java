@@ -5,7 +5,6 @@ import java.util.Map.Entry;
 
 import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
-import org.scribble.ext.assrt.core.type.name.AssrtPayElemType;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
 public class AssrtAmbigVarFormula extends AssrtAVarFormula
@@ -36,7 +35,8 @@ public class AssrtAmbigVarFormula extends AssrtAVarFormula
 	
 	// i.e., to "type"
 	@Override
-	public AssrtPayElemType<?> toName()
+	public //AssrtPayElemType<?> 
+	AssrtIntVar toName()
 	{
 		throw new RuntimeException("Shouldn't get in here: " + name);
 	}

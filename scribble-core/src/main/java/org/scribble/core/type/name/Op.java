@@ -52,6 +52,7 @@ public class Op extends AbstractName<OpKind> implements MsgId<OpKind>
 		return n.canEquals(this) && super.equals(o);
 	}
 	
+	@Override
 	public boolean canEquals(Object o)
 	{
 		return o instanceof Op;
@@ -61,7 +62,7 @@ public class Op extends AbstractName<OpKind> implements MsgId<OpKind>
 	public int hashCode()
 	{
 		int hash = 2801;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
 		return hash;
 	}
 }

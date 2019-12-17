@@ -23,7 +23,7 @@ public class AssrtStrVarFormula extends AssrtAVarFormula
 	@Override
 	public AssrtIntVar toName()
 	{
-		return new AssrtIntVar(this.name);
+		return new AssrtIntVar(this.name, "String");
 	}
 
 	@Override
