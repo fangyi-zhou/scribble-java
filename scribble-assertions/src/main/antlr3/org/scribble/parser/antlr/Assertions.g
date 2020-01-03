@@ -74,6 +74,9 @@ tokens
 {
 	package org.scribble.parser.antlr;
 	
+	import org.antlr.runtime.Token;
+	import org.antlr.runtime.tree.CommonTree;
+
   import org.scribble.ast.ScribNodeBase;
 
   import org.scribble.ext.assrt.ast.AssrtAExprNode;
@@ -190,6 +193,13 @@ tokens
 		}
 		return tmp;
 	}
+
+	public static CommonTree parseStringLit(Token t) 
+	{
+		String text = t.getText();
+		t.setText(text.substring(1, text.length()-1)); 
+		return new CommonTree(t);
+	}
 }
 
 
@@ -201,6 +211,16 @@ WHITESPACE:
 	}
 ;
 
+IDENTIFIER:
+	LETTER (LETTER | DIGIT)*
+;  
+
+NUMBER: 
+	(DIGIT)+
+; 
+
+STRINGLITT: '\'' (LETTER | DIGIT | WHITESPACE)* '\'' ;
+
 fragment LETTER:
 	'a'..'z' | 'A'..'Z'
 ;
@@ -208,18 +228,6 @@ fragment LETTER:
 fragment DIGIT:
 	'0'..'9'
 ;
-
-IDENTIFIER:
-	LETTER (LETTER | DIGIT)*
-;  
-
-/*STRING:
-	(LETTER | DIGIT)*
-;*/
-
-NUMBER: 
-	(DIGIT)+
-; 
 
 
 variable: 
@@ -234,8 +242,12 @@ intlit:
 	
 stringlit:
 	//'\'' str=(LETTER | DIGIT)* '\'' -> ^(STRVAL $str)
-	'\'' IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
+	//'\'' str=(LETTER | DIGIT)+ '\'' -> ^(STRVAL $str)
+	//'\'' str=LETTER* '\'' -> ^(STRVAL $str)
+	//'\'' str=IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
 	//IDENTIFIER -> ^(STRVAL IDENTIFIER)
+	//'\'' str=(LETTER | DIGIT | WHITESPACE)+ '\'' -> ^(STRVAL $str)
+	t=STRINGLITT -> ^(STRVAL {AssertionsParser.parseStringLit($t)})
 ;
 
 
@@ -370,6 +382,7 @@ assrt_statevardecl:
 ;
 
 // Duplicated from AssrtScribble.g
+//assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 
 assrt_statevarargs:

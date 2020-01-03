@@ -171,10 +171,17 @@ type <dotnet> "System.String" from "..." as String;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
-global protocol Proto1(role A, role B) @"<x:='abc'>" {
+global protocol Proto1(role A, role B) @"<x:='123'>" {
 	//1() from A to B;
 	1() from A to B; @"x < 123"  // TODO: "internal" sort check?
 }
+
+
+/*
+global protocol Proto1(role A, role B) @"<x:=122>" {
+	1() from A to B; @"x < 123"  // CHECKME TODO: special case of "non-recursive" state vars? (no need to check assrt-prog with _x)
+}
+//*/
 
 
 /*/
