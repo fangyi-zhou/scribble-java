@@ -2,9 +2,11 @@ package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.name.AssrtSort;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -20,6 +22,12 @@ public class AssrtUnintPredicateFormula extends AssrtBFormula implements AssrtUn
 	{
 		this.name = name;
 		this.args = Collections.unmodifiableList(args);
+	}
+
+	@Override
+	public AssrtUnintPredicateFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Shouldn't get in here: " + this);
 	}
 
 	@Override
@@ -59,16 +67,17 @@ public class AssrtUnintPredicateFormula extends AssrtBFormula implements AssrtUn
 	}
 
 	@Override
-	public AssrtBFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return new AssrtUnintPredicateFormula(this.name, 
 				this.args.stream().map(a -> a.subs(old, neu)).collect(Collectors.toList()));
 	}
 
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		return "(" + this.name + " " + this.args.stream().map(a -> a.toSmt2Formula()).collect(Collectors.joining(" ")) + ")";
+		return "(" + this.name + " " + this.args.stream()
+				.map(a -> a.toSmt2Formula(env)).collect(Collectors.joining(" ")) + ")";
 	}
 
 	@Override

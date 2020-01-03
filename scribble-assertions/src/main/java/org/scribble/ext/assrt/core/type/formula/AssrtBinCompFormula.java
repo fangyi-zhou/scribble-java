@@ -1,8 +1,10 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -59,6 +61,14 @@ public class AssrtBinCompFormula extends AssrtBFormula implements AssrtBinFormul
 	}
 
 	@Override
+	public AssrtBinCompFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtBinCompFormula(this.op,
+				(AssrtAFormula) this.left.disamb(env),
+				(AssrtAFormula) this.right.disamb(env));
+	}
+
+	@Override
 	public AssrtBFormula getCnf()
 	{
 		return this;
@@ -90,16 +100,16 @@ public class AssrtBinCompFormula extends AssrtBFormula implements AssrtBinFormul
 	}
 
 	@Override
-	public AssrtBinCompFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBinCompFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return AssrtFormulaFactory.AssrtBinComp(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String left = this.left.toSmt2Formula();
-		String right = this.right.toSmt2Formula();
+		String left = this.left.toSmt2Formula(env);
+		String right = this.right.toSmt2Formula(env);
 		String op;
 		switch(this.op)
 		{
@@ -117,8 +127,8 @@ public class AssrtBinCompFormula extends AssrtBFormula implements AssrtBinFormul
 	public BooleanFormula toJavaSmtFormula() //throws AssertionParseException
 	{
 		IntegerFormulaManager fmanager = JavaSmtWrapper.getInstance().ifm;
-		IntegerFormula fleft = (IntegerFormula) this.left.toJavaSmtFormula();
-		IntegerFormula fright = (IntegerFormula) this.right.toJavaSmtFormula();
+		IntegerFormula fleft = this.left.toJavaSmtFormula();
+		IntegerFormula fright = this.right.toJavaSmtFormula();
 		switch(this.op)
 		{
 			case GreaterThan: 

@@ -4,7 +4,6 @@ import org.antlr.runtime.Token;
 import org.scribble.ast.PayElem;
 import org.scribble.ast.ScribNodeBase;
 import org.scribble.ast.name.PayElemNameNode;
-import org.scribble.ast.name.qualified.DataNameNode;
 import org.scribble.core.type.kind.DataKind;
 import org.scribble.core.type.name.DataName;
 import org.scribble.del.DelFactory;

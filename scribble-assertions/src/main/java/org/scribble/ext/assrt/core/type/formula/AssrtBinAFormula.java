@@ -1,15 +1,17 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
 
-// Binary arithmetic
+// Binary arithmetic -- FIXME: AssrtIntVarFormula no longer just ints
 public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<IntegerFormula>
 {
 	public enum Op
@@ -43,17 +45,39 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 		this.right = right;
 		this.op = op;
 	}
+
+	@Override
+	public AssrtBinAFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtBinAFormula(this.op, (AssrtAFormula) this.left.disamb(env),
+				(AssrtAFormula) this.right.disamb(env));
+	}
 	
 	@Override
 	public AssrtBinAFormula squash()
 	{
-		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.squash(), this.right.squash());
+		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.squash(),
+				this.right.squash());
 	}
 
 	@Override
-	public AssrtBinAFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBinAFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
-		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
+		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.subs(old, neu),
+				this.right.subs(old, neu));
+	}
+
+	@Override
+	public DataName getSort(Map<AssrtIntVar, DataName> env)
+	{
+		DataName intSort = new DataName("int");
+		if (!this.left.getSort(env).equals(intSort)
+				|| !this.right.getSort(env).equals(intSort))
+		{
+			throw new RuntimeException(
+					"[assrt-core][TODO] Non-int operators: " + this);
+		}
+		return intSort;
 	}
 
 	@Override
@@ -63,10 +87,10 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String left = this.left.toSmt2Formula();
-		String right = this.right.toSmt2Formula();
+		String left = this.left.toSmt2Formula(env);
+		String right = this.right.toSmt2Formula(env);
 		String op;
 		switch(this.op)
 		{

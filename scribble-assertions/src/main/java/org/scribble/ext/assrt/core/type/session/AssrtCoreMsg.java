@@ -2,10 +2,13 @@ package org.scribble.ext.assrt.core.type.session;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.Op;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 
 public class AssrtCoreMsg
@@ -21,6 +24,12 @@ public class AssrtCoreMsg
 		this.ass = ass;
 	}
 	
+	public AssrtCoreMsg disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtCoreMsg(this.op, this.pay,
+				(AssrtBFormula) this.ass.disamb(env));
+	}
+
 	@Override
 	public String toString()
 	{

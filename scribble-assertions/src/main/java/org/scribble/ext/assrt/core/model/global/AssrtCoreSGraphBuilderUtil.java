@@ -12,6 +12,7 @@ import org.scribble.core.model.endpoint.EFsm;
 import org.scribble.core.model.endpoint.EGraph;
 import org.scribble.core.model.global.SGraphBuilderUtil;
 import org.scribble.core.model.global.SSingleBuffers;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.Role;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
@@ -35,14 +36,19 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 	protected AssrtCoreSConfig createInitConfig(Map<Role, EGraph> egraphs,
 			boolean explicit)
 	{
+		throw new RuntimeException("Deprecated.");
+	}
+
+	protected AssrtCoreSConfig createInitConfig(Map<Role, EGraph> egraphs,
+			boolean explicit, Map<AssrtIntVar, DataName> Env)
+	{
 		Map<Role, EFsm> P = egraphs.entrySet().stream()
 				.collect(Collectors.toMap(Entry::getKey, e -> e.getValue().toFsm()));
 		SSingleBuffers Q = new AssrtCoreSSingleBuffers(P.keySet(), !explicit);  // TODO: refactor queues creation via modelfactory (cf. super)
 		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q,
 				makeK(P.keySet()), makeF(P),
-				//P.keySet().stream().collect(Collectors.toMap(r -> r, r -> new HashMap<>()))
-				//makeScopes(P), 
-				makeV(P), makeR(P)
+				makeV(P), makeR(P),
+				Env  // Should initially just the svar sorts (for all svars, including nested) -- TODO: currently just empty, hacked inside AssrtCoreSConfig for now
 				);
 	}
 
@@ -120,7 +126,7 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 		{
 			AssrtIntVarFormula old = AssrtFormulaFactory.AssrtIntVar(v.toString());  // N.B. making *Formula*
 			AssrtIntVarFormula fresh = AssrtFormulaFactory
-					.AssrtIntVar("_" + v.toString());  // HACK
+					.AssrtIntVar("_" + v.toString());  // FIXME HACK
 			f = f.subs(old, fresh);  // N.B., works on Formulas
 		}
 		return f;

@@ -15,6 +15,7 @@ package org.scribble.ext.assrt.core.type.session;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,11 +24,13 @@ import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.job.Core;
 import org.scribble.core.type.kind.NonRoleParamKind;
 import org.scribble.core.type.kind.ProtoKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.ProtoName;
 import org.scribble.core.type.name.Role;
 import org.scribble.core.type.session.Arg;
 import org.scribble.ext.assrt.core.lang.AssrtCoreProtocol;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 public abstract class AssrtCoreDo<K extends ProtoKind, B extends AssrtCoreSType<K, B>>
 		extends AssrtCoreSTypeBase<K, B>
@@ -54,6 +57,12 @@ public abstract class AssrtCoreDo<K extends ProtoKind, B extends AssrtCoreSType<
 			Function<AssrtCoreSType<K, B>, Stream<T>> f)
 	{
 		// Currently, assrt-core gather only for rec pruning -- done after inlining, so not needed for do
+		throw new RuntimeException("Deprecated for " + getClass() + ":\n\t" + this);
+	}
+
+	@Override
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	{
 		throw new RuntimeException("Deprecated for " + getClass() + ":\n\t" + this);
 	}
 

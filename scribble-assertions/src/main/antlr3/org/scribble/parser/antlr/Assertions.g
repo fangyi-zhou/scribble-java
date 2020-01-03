@@ -38,7 +38,9 @@ tokens
 	 * categories) i.e. the labels used to distinguish resulting AST nodes.
 	 * The value of these token variables doesn't matter, only the token
 	 * (i.e. variable) names themselves are used (for AST node root text
-	 * field)
+	 * field).
+	 * 
+	 * These token names are cased on by AssrtAntlrToFormulaParser.
 	 */
 	//EMPTY_LIST = 'EMPTY_LIST';
 	
@@ -50,9 +52,10 @@ tokens
 	ARITHEXPR; 
 	NEGEXPR;
 
-	INTVAR; 
+	INTVAR;  // FIXME: rename Ambig
 	INTVAL; 
 	NEGINTVAL; 
+	STRVAL; 
 
 	TRUE;
 	FALSE;
@@ -71,6 +74,9 @@ tokens
 {
 	package org.scribble.parser.antlr;
 	
+	import org.antlr.runtime.Token;
+	import org.antlr.runtime.tree.CommonTree;
+
   import org.scribble.ast.ScribNodeBase;
 
   import org.scribble.ext.assrt.ast.AssrtAExprNode;
@@ -187,6 +193,13 @@ tokens
 		}
 		return tmp;
 	}
+
+	public static CommonTree parseStringLit(Token t) 
+	{
+		String text = t.getText();
+		t.setText(text.substring(1, text.length()-1)); 
+		return new CommonTree(t);
+	}
 }
 
 
@@ -198,14 +211,6 @@ WHITESPACE:
 	}
 ;
 
-fragment LETTER:
-	'a'..'z' | 'A'..'Z'
-;
-
-fragment DIGIT:
-	'0'..'9'
-;
-
 IDENTIFIER:
 	LETTER (LETTER | DIGIT)*
 ;  
@@ -214,16 +219,37 @@ NUMBER:
 	(DIGIT)+
 ; 
 
+STRINGLITT: '\'' (LETTER | DIGIT | WHITESPACE)* '\''
+| '\"' (LETTER | DIGIT | WHITESPACE)* '\"' ;
+
+fragment LETTER:
+	'a'..'z' | 'A'..'Z'
+;
+
+fragment DIGIT:
+	'0'..'9'
+;
+
 
 variable: 
 	IDENTIFIER -> ^(INTVAR IDENTIFIER)
 ; 	  
 
-num: 
+intlit: 
 	NUMBER -> ^(INTVAL NUMBER)	   
 |
 	'-' NUMBER -> ^(NEGINTVAL NUMBER)
 ; 
+	
+stringlit:
+	//'\'' str=(LETTER | DIGIT)* '\'' -> ^(STRVAL $str)
+	//'\'' str=(LETTER | DIGIT)+ '\'' -> ^(STRVAL $str)
+	//'\'' str=LETTER* '\'' -> ^(STRVAL $str)
+	//'\'' str=IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
+	//IDENTIFIER -> ^(STRVAL IDENTIFIER)
+	//'\'' str=(LETTER | DIGIT | WHITESPACE)+ '\'' -> ^(STRVAL $str)
+	t=STRINGLITT -> ^(STRVAL {AssertionsParser.parseStringLit($t)})
+;
 
 
 root:  // Seems mandatory?  For top-level Tree?
@@ -315,7 +341,9 @@ literal:
 |
 	FALSE_KW -> ^(FALSE)
 |
-	num
+	intlit
+|
+	stringlit
 ;
 
 /*
@@ -355,6 +383,7 @@ assrt_statevardecl:
 ;
 
 // Duplicated from AssrtScribble.g
+//assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 
 assrt_statevarargs:

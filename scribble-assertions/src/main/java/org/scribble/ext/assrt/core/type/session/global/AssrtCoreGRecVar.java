@@ -2,9 +2,12 @@ package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.Global;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.RecVar;
 import org.scribble.core.type.name.Role;
 import org.scribble.core.type.name.Substitutions;
@@ -12,6 +15,7 @@ import org.scribble.ext.assrt.core.job.AssrtCore;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.session.AssrtCoreRecVar;
 import org.scribble.ext.assrt.core.type.session.local.AssrtCoreLRecVar;
 import org.scribble.ext.assrt.core.type.session.local.AssrtCoreLTypeFactory;
@@ -25,6 +29,14 @@ public class AssrtCoreGRecVar extends AssrtCoreRecVar<Global, AssrtCoreGType>
 			List<AssrtAFormula> sexprs)
 	{
 		super(source, rv, sexprs);
+	}
+
+	@Override
+	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtCoreGRecVar(getSource(), this.recvar,
+				this.stateexprs.stream().map(x -> (AssrtAFormula) x.disamb(env))
+						.collect(Collectors.toList()));
 	}
 
 	@Override
@@ -56,7 +68,8 @@ public class AssrtCoreGRecVar extends AssrtCoreRecVar<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(
+			Map<AssrtIntVar, DataName> env)
 	{
 		return Collections.emptyList();
 	}

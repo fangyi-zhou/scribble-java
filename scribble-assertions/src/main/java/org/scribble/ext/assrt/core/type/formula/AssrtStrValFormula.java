@@ -10,32 +10,31 @@ import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
-// Integer literal
-public class AssrtIntValFormula extends AssrtAFormula
+// FIXME: factor out with Int -- record "type" as a field
+// String literal
+public class AssrtStrValFormula extends AssrtAFormula
 {
-	public static final AssrtAFormula ZERO = AssrtFormulaFactory.AssrtIntVal(0); 
+	public final String val;
 
-	public final int val;
-
-	protected AssrtIntValFormula(int i)
+	protected AssrtStrValFormula(String s)
 	{
-		this.val = i; 
+		this.val = s;
 	}
 
 	@Override
-	public AssrtIntValFormula disamb(Map<AssrtIntVar, DataName> env)
+	public AssrtStrValFormula disamb(Map<AssrtIntVar, DataName> env)  // FIXME: not Integer -- sosy_lab stuff should be removed?
 	{
 		return this;
 	}
 
 	@Override
-	public AssrtIntValFormula squash()
+	public AssrtStrValFormula squash()
 	{
-		return AssrtFormulaFactory.AssrtIntVal(this.val);
+		return AssrtFormulaFactory.AssrtStrVal(this.val);
 	}
 
 	@Override
-	public AssrtIntValFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
+	public AssrtStrValFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)  // FIXME: mismatch between Str and ArithFormula?
 	{
 		return this;
 	}
@@ -43,7 +42,7 @@ public class AssrtIntValFormula extends AssrtAFormula
 	@Override
 	public DataName getSort(Map<AssrtIntVar, DataName> env)
 	{
-		return new DataName("int");  // TODO: factor out constant
+		return new DataName("String");  // TODO: factor out constant
 	}
 
 	@Override
@@ -55,8 +54,7 @@ public class AssrtIntValFormula extends AssrtAFormula
 	@Override
 	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		//return "(" + Integer.toString(this.val) + ")";
-		return Integer.toString(this.val);
+		return "\"" + this.val + "\"";
 	}
 	
 	@Override
@@ -75,7 +73,7 @@ public class AssrtIntValFormula extends AssrtAFormula
 	@Override
 	public String toString()
 	{
-		return Integer.toString(this.val); 
+		return "\"" + this.val + "\"";
 	}
 	
 	@Override
@@ -85,26 +83,26 @@ public class AssrtIntValFormula extends AssrtAFormula
 		{
 			return true;
 		}
-		if (!(o instanceof AssrtIntValFormula))
+		if (!(o instanceof AssrtStrValFormula))
 		{
 			return false;
 		}
 		return super.equals(this)  // Does canEqual
-				&& this.val == ((AssrtIntValFormula) o).val;
+				&& this.val == ((AssrtStrValFormula) o).val;
 	}
 	
 	@Override
 	protected boolean canEqual(Object o)
 	{
-		return o instanceof AssrtIntValFormula;
+		return o instanceof AssrtStrValFormula;
 	}
 
 	@Override
 	public int hashCode()
 	{
-		int hash = 5897;
+		int hash = 6911;
 		hash = 31 * hash + super.hashCode();
-		hash = 31 * hash + this.val;
+		hash = 31 * hash + this.val.hashCode();
 		return hash;
 	}
 }

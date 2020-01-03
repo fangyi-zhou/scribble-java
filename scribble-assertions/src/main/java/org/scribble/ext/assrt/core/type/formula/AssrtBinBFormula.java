@@ -3,8 +3,10 @@ package org.scribble.ext.assrt.core.type.formula;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -56,6 +58,13 @@ public class AssrtBinBFormula extends AssrtBFormula implements AssrtBinFormula<B
 	}
 
 	@Override
+	public AssrtBinBFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return new AssrtBinBFormula(this.op, (AssrtBFormula) this.left.disamb(env),
+				(AssrtBFormula) this.right.disamb(env));
+	}
+
+	@Override
 	public AssrtBFormula getCnf()
 	{
 		switch (this.op)
@@ -99,6 +108,7 @@ public class AssrtBinBFormula extends AssrtBFormula implements AssrtBinFormula<B
 	}
 	
 	//public boolean isDisjunction()
+	@Override
 	public boolean isNF(AssrtBinBFormula.Op top)
 	{
 		if (this.op == top)
@@ -205,16 +215,16 @@ public class AssrtBinBFormula extends AssrtBFormula implements AssrtBinFormula<B
 	}
 
 	@Override
-	public AssrtBinBFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtBinBFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return AssrtFormulaFactory.AssrtBinBool(this.op, this.left.subs(old, neu), this.right.subs(old, neu));
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String left = this.left.toSmt2Formula();
-		String right = this.right.toSmt2Formula();
+		String left = this.left.toSmt2Formula(env);
+		String right = this.right.toSmt2Formula(env);
 		String op;
 		switch(this.op)
 		{
@@ -230,8 +240,8 @@ public class AssrtBinBFormula extends AssrtBFormula implements AssrtBinFormula<B
 	protected BooleanFormula toJavaSmtFormula() //throws AssertionParseException
 	{
 		BooleanFormulaManager fmanager = JavaSmtWrapper.getInstance().bfm;
-		BooleanFormula bleft = (BooleanFormula) this.left.toJavaSmtFormula();
-		BooleanFormula bright = (BooleanFormula) this.right.toJavaSmtFormula();
+		BooleanFormula bleft = this.left.toJavaSmtFormula();
+		BooleanFormula bright = this.right.toJavaSmtFormula();
 		switch(this.op)
 		{
 			case And:   return fmanager.and(bleft, bright); 

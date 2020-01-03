@@ -43,7 +43,7 @@ public class AssrtSort extends AbstractName<AssrtSortKind>  // Cf. Op   // integ
 	public int hashCode()
 	{
 		int hash = 7649;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
 		return hash;
 	}
 }

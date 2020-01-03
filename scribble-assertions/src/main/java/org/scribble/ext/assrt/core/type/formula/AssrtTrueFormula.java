@@ -1,8 +1,10 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -15,6 +17,12 @@ public class AssrtTrueFormula extends AssrtBFormula
 	private AssrtTrueFormula()
 	{
 		
+	}
+
+	@Override
+	public AssrtTrueFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return this;
 	}
 
 	@Override
@@ -42,13 +50,13 @@ public class AssrtTrueFormula extends AssrtBFormula
 	}
 
 	@Override
-	public AssrtTrueFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtTrueFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		return this;
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		return "true";
 	}

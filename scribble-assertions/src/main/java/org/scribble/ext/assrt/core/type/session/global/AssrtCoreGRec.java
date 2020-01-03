@@ -1,7 +1,10 @@
 package org.scribble.ext.assrt.core.type.session.global;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,20 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars, AssrtBFormula ass)
 	{
 		super(source, rv, body, svars, ass);
+	}
+
+	@Override
+	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
+	{
+		Map<AssrtIntVar, DataName> env1 = new HashMap<>(env);
+		this.statevars.entrySet()
+				.forEach(x -> env1.put(x.getKey(), x.getValue().getSort(env1)));
+		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+		this.statevars.entrySet().forEach(x -> svars.put(x.getKey(),
+				(AssrtAFormula) x.getValue().disamb(env1)));  // Unnecessary, disallow mutual var refs?
+		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGRec(
+				getSource(), this.recvar, this.body.disamb(core, env1), svars,
+				(AssrtBFormula) this.assertion.disamb(env1));
 	}
 
 	@Override
@@ -70,13 +87,20 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(
+			Map<AssrtIntVar, DataName> env)
 	{
-		List<AssrtAnnotDataName> res = this.body.collectAnnotDataVarDecls();
+		List<AssrtAnnotDataName> res = new LinkedList<>();
+		Map<AssrtIntVar, DataName> env1 = new HashMap<>(env);
+		this.statevars.entrySet()
+				.forEach(x -> env1.put(x.getKey(), x.getValue().getSort(env1)));
+
 		this.statevars.keySet().stream().forEachOrdered(
-				v -> res.add(new AssrtAnnotDataName(v, new DataName("int"))));  // TODO: factor out int constant
+				v -> res.add(new AssrtAnnotDataName(v, env1.get(v))));
 		/*this.ass.getIntVars().stream().forEachOrdered(
 				v -> res.add(new AssrtAnnotDataType(v, new DataType("int"))));  // No: not decls*/
+
+		res.addAll(this.body.collectAnnotDataVarDecls(env1));
 		return res;
 	}
 

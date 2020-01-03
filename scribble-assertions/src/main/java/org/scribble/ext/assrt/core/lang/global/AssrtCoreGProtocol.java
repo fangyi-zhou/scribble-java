@@ -13,8 +13,11 @@
  */
 package org.scribble.ext.assrt.core.lang.global;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -25,6 +28,7 @@ import org.scribble.core.lang.global.GProtocol;
 import org.scribble.core.lang.local.LProjection;
 import org.scribble.core.type.kind.Global;
 import org.scribble.core.type.kind.NonRoleParamKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.LProtoName;
 import org.scribble.core.type.name.MemberName;
@@ -68,6 +72,20 @@ public class AssrtCoreGProtocol extends GProtocol
 		this.type = type;
 		this.statevars = new LinkedHashMap<>(svars);  // TODO: unmod
 		this.assertion = assrt;
+	}
+
+	// Implicit empty context -- cf. AssrtCoreSType#getSortEnv
+	public Map<AssrtIntVar, DataName> getSortEnv()
+	{
+		Map<AssrtIntVar, DataName> sorts = new HashMap<>();
+		for (Entry<AssrtIntVar, AssrtAFormula> e : this.statevars.entrySet())
+		{
+			// statevar sorts -- left-to-right scoping (cf. LinkedHashMap)
+			DataName sort = e.getValue().getSort(sorts);
+			sorts.put(e.getKey(), sort);
+		}
+		sorts.putAll(this.type.getBoundSortEnv(sorts));
+		return sorts;
 	}
 
 	// Deprecated because no longer using GSeq def

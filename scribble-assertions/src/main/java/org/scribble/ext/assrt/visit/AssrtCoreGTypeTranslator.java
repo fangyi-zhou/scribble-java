@@ -137,6 +137,14 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 		}
 		AssrtBExprNode tmp2 = hdr.getAnnotAssertChild();
 		AssrtBFormula ass = (tmp2 == null) ? AssrtTrueFormula.TRUE : tmp2.expr;
+		
+		/*Map<AssrtIntVar, DataName> env = body.assrtCoreGather(
+				new AssrtCoreVarEnvGatherer<Global, AssrtCoreGType>()::visit)
+				.collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
+		svars.keySet().forEach(x -> env.put(x, new DataName("int")));  // FIXME
+		body = body.disamb((AssrtCore) this.job.getCore(), env);
+		ass = (AssrtBFormula) ass.disamb(env);*/
+		
 		return new AssrtCoreGProtocol(n, mods, fullname, rs, ps, body, svars, ass);
 	}
 
@@ -451,7 +459,8 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 			{
 				AssrtAnnotDataName data = ((AssrtAnnotDataElem) e).toPayloadType();
 				String type = data.data.toString();
-				if (!type.equals("int") && !type.endsWith(".int"))  // HACK FIXME (currently "int" for F# -- because STP takes dot)
+				if (!type.equals("int") && !type.endsWith(".int")  // HACK FIXME (currently "int" for F# -- because STP takes dot)
+						&& !type.equals("String"))
 				{
 					throw new AssrtCoreSyntaxException(e.getSource(),
 							"[assrt-core] Payload annotations not supported for non- \"int\" type kind: "
@@ -474,7 +483,11 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 					throw new AssrtCoreSyntaxException(e.getSource(),
 							"[assrt-core] Non- datatype kind payload not supported: " + e);
 				}
-				res.add(new AssrtAnnotDataName(makeFreshDataTypeVar(), (DataName) e1));
+				if (!e1.toString().equals("int"))
+				{
+					throw new RuntimeException("[assrt-core] TODO: " + e1);
+				}
+				res.add(new AssrtAnnotDataName(makeFreshDataTypeVar(), (DataName) e1));  // FIXME: default hardcoded to "int"
 			}
 		}
 		return res;

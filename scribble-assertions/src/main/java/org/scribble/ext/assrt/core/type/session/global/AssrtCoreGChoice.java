@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.Global;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.RecVar;
 import org.scribble.core.type.name.Role;
 import org.scribble.core.type.name.Substitutions;
@@ -18,6 +19,7 @@ import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtFormulaFactory;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.session.AssrtCoreActionKind;
 import org.scribble.ext.assrt.core.type.session.AssrtCoreChoice;
 import org.scribble.ext.assrt.core.type.session.AssrtCoreMsg;
@@ -44,6 +46,15 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 		super(source, dst, kind, cases);
 		this.src = src;
 		this.dst = dst;
+	}
+
+	@Override
+	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
+	{
+		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGChoice(
+				getSource(), this.src, getKind(), this.dst,
+				this.cases.entrySet().stream().collect(Collectors.toMap(
+						x -> x.getKey().disamb(env), x -> x.getValue().disamb(core, env))));
 	}
 
 	@Override
@@ -220,12 +231,15 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(Map<AssrtIntVar, DataName> env)
 	{
 		List<AssrtAnnotDataName> res = this.cases.keySet().stream()
 				.flatMap(a -> a.pay.stream()).collect(Collectors.toList());
-		this.cases.keySet().forEach(
-				a -> res.addAll(this.cases.get(a).collectAnnotDataVarDecls()));
+		for (AssrtCoreMsg m : this.cases.keySet()) {
+			Map<AssrtIntVar, DataName> tmp = new HashMap<>(env);
+			m.pay.forEach(x -> tmp.put(x.var, x.data));
+			res.addAll(this.cases.get(m).collectAnnotDataVarDecls(tmp));
+		}
 		return res;
 	}
 	

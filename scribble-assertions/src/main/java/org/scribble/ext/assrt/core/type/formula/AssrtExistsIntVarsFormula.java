@@ -1,18 +1,30 @@
 package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.scribble.core.type.name.DataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
+// FIXME: not only int vars now -- cf. AssrtIntVar renaming
 public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 {
 	// Pre: vars non empty
-	protected AssrtExistsIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	//protected AssrtExistsIntVarsFormula(List<AssrtIntVarFormula> vars, AssrtBFormula expr)
+	protected AssrtExistsIntVarsFormula(List<AssrtAVarFormula> vars,
+			AssrtBFormula expr)
 	{
 		super(vars, expr);
+	}
+
+	@Override
+	public AssrtExistsIntVarsFormula disamb(Map<AssrtIntVar, DataName> env)  // IntVar now stands for all var types
+	{
+		throw new RuntimeException("Won't get in here: " + this);  // Not a parsed syntax
 	}
 
 	@Override
@@ -36,14 +48,16 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	public AssrtBFormula squash()
 	{
-		List<AssrtIntVarFormula> vars
-				= this.vars.stream().filter(v -> !v.toString().startsWith("_dum")).collect(Collectors.toList());  // FIXME
+		List<AssrtAVarFormula> vars = this.vars.stream()
+				.filter(v -> !v.toString().startsWith("_dum"))
+				.collect(Collectors.toList());  // FIXME
 		AssrtBFormula expr = this.expr.squash();
-		return (vars.isEmpty()) ? expr : AssrtFormulaFactory.AssrtExistsFormula(vars, expr);
+		return vars.isEmpty() ? expr
+				: AssrtFormulaFactory.AssrtExistsFormula(vars, expr);
 	}
 
 	@Override
-	public AssrtExistsIntVarsFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtExistsIntVarsFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		if (this.vars.contains(old))
 		{
@@ -56,17 +70,19 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	}
 	
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String vs = this.vars.stream().map(v -> "(" + v.toSmt2Formula() + " Int)").collect(Collectors.joining(" "));
-		String expr = this.expr.toSmt2Formula();
+		String vs = this.vars.stream()
+				.map(v -> AssrtForallIntVarsFormula.getSmt2VarDecl(env, v))
+				.collect(Collectors.joining(" "));
+		String expr = this.expr.toSmt2Formula(env);
 		return "(exists (" + vs + ") " + expr + ")";
 	}
 
 	@Override
 	protected BooleanFormula toJavaSmtFormula()
 	{
-		BooleanFormula expr = (BooleanFormula) this.expr.toJavaSmtFormula();
+		BooleanFormula expr = this.expr.toJavaSmtFormula();
 		List<IntegerFormula> vs = this.vars.stream().map(v -> v.getJavaSmtFormula()).collect(Collectors.toList());
 
 		/*JavaSmtWrapper j = JavaSmtWrapper.getInstance();  // Cf. AssrtTest.JavaSmtBug

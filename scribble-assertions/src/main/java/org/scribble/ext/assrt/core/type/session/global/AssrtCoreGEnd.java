@@ -2,13 +2,16 @@ package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.scribble.core.type.kind.Global;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.Role;
 import org.scribble.core.type.name.Substitutions;
 import org.scribble.ext.assrt.core.job.AssrtCore;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.session.AssrtCoreEnd;
 import org.scribble.ext.assrt.core.type.session.local.AssrtCoreLEnd;
 import org.scribble.ext.assrt.core.type.session.local.AssrtCoreLTypeFactory;
@@ -23,6 +26,12 @@ public class AssrtCoreGEnd extends AssrtCoreEnd<Global, AssrtCoreGType>
 	protected AssrtCoreGEnd()
 	{
 		
+	}
+
+	@Override
+	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
+	{
+		return this;
 	}
 
 	@Override
@@ -51,7 +60,8 @@ public class AssrtCoreGEnd extends AssrtCoreEnd<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(
+			Map<AssrtIntVar, DataName> env)
 	{
 		return Collections.emptyList();
 	}

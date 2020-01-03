@@ -1,12 +1,16 @@
 package org.scribble.ext.assrt.core.type.session;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.ProtoKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.RecVar;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
@@ -37,6 +41,24 @@ public abstract class AssrtCoreRec<K extends ProtoKind,
 			Function<AssrtCoreSType<K, B>, Stream<T>> f)
 	{
 		return Stream.concat(f.apply(this), this.body.assrtCoreGather(f));
+	}
+
+	@Override
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	{
+		Map<AssrtIntVar, DataName> sorts = new HashMap<>();
+		Map<AssrtIntVar, DataName> tmp = new HashMap<>(ctxt);
+		for (Entry<AssrtIntVar, AssrtAFormula> e : this.statevars.entrySet())  // statevar sorts
+		{
+			// statevar sorts -- left-to-right scoping (cf. LinkedHashMap)
+			DataName sort = e.getValue().getSort(tmp);
+			AssrtIntVar svar = e.getKey();
+			sorts.put(svar, sort);
+			tmp.put(svar, sort);
+		}
+		tmp.putAll(sorts);
+		sorts.putAll(this.body.getBoundSortEnv(tmp));
+		return sorts;
 	}
 	
 	@Override

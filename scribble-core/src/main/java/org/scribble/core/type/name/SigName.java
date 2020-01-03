@@ -71,6 +71,7 @@ public class SigName extends MemberName<SigKind> implements Msg, MsgId<SigKind>
 		return n.canEquals(this) && super.equals(o);
 	}
 	
+	@Override
 	public boolean canEquals(Object o)
 	{
 		return o instanceof SigName;
@@ -80,7 +81,7 @@ public class SigName extends MemberName<SigKind> implements Msg, MsgId<SigKind>
 	public int hashCode()
 	{
 		int hash = 2791;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
 		return hash;
 	}
 }

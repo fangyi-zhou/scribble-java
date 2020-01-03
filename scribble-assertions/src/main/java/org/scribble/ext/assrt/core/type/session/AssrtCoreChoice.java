@@ -1,14 +1,18 @@
 package org.scribble.ext.assrt.core.type.session;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.ProtoKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.Role;
+import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 
 // TODO: rename directed choice
 public abstract class AssrtCoreChoice<K extends ProtoKind, 
@@ -38,7 +42,20 @@ public abstract class AssrtCoreChoice<K extends ProtoKind,
 				this.cases.values().stream().flatMap(x -> x.assrtCoreGather(f)));
 	}
 
-	
+	@Override
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	{
+		Map<AssrtIntVar, DataName> res = this.cases.keySet().stream()
+				.flatMap(x -> x.pay.stream())
+				.collect(Collectors.toMap(x -> x.var, x -> x.data));
+		Map<AssrtIntVar, DataName> tmp = new HashMap<>(ctxt);
+		tmp.putAll(res);
+		res.putAll(this.cases.values().stream()
+				.flatMap(x -> x.getBoundSortEnv(tmp).entrySet().stream())
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
+		return res;
+	}
+
 	public abstract AssrtCoreActionKind<K> getKind();
 	
 	@Override

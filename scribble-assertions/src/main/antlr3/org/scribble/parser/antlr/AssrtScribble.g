@@ -302,13 +302,23 @@ fragment SYMBOL:
 |
 	'&' | '?' | '!'  | UNDERSCORE
 |
-	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*'  // Assrt
+	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*' | '\''  // Assrt
+;
+
+fragment SYMBOLa:
+	'{' | '}' | '(' | ')' | '[' | ']' | ':' | '/' | '\\' | '.' | '\#'
+|
+	'&' | '?' | '!'  | UNDERSCORE
+|
+	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*' | '\"'
 ;
 
 // Comes after SYMBOL due to an ANTLR syntax highlighting issue involving quotes.
-// CHECKME: parser doesn't work without locating the quotes here? (e.g. if inlined into parser rules)
+// CHECKME: parser doesn't work without locating the quotes here? (e.g., if inlined into parser rules)
 EXTID:
 	'\"' (LETTER | DIGIT | SYMBOL | WHITESPACE)* '\"'  // N.B. WHITESPACE, for assertions white space
+|
+	'\'' (LETTER | DIGIT | SYMBOLa | WHITESPACE)* '\''  // N.B. WHITESPACE, for assertions white space
 ;
 
 fragment LETTER:

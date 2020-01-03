@@ -2,8 +2,10 @@ package org.scribble.ext.assrt.core.type.formula;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import org.scribble.core.type.name.DataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.util.JavaSmtWrapper;
 import org.sosy_lab.java_smt.api.BooleanFormula;
@@ -17,6 +19,12 @@ public class AssrtLogFormula extends AssrtBFormula
 	{
 		this.formula = f;  
 		this.vars = Collections.unmodifiableSet(vars); 	
+	}
+
+	@Override
+	public AssrtLogFormula disamb(Map<AssrtIntVar, DataName> env)
+	{
+		return this;
 	}
 
 	@Override
@@ -44,13 +52,13 @@ public class AssrtLogFormula extends AssrtBFormula
 	}
 
 	@Override
-	public AssrtTrueFormula subs(AssrtIntVarFormula old, AssrtIntVarFormula neu)
+	public AssrtTrueFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
 		throw new RuntimeException("[assrt] Shouldn't get in here: " + this);
 	}
 		
 	@Override
-	public String toSmt2Formula()
+	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		throw new RuntimeException("[assrt] Shouldn't get in here: " + this);
 	}
@@ -58,7 +66,7 @@ public class AssrtLogFormula extends AssrtBFormula
 	@Override
 	protected BooleanFormula toJavaSmtFormula() //throws AssertionParseException
 	{
-		return (BooleanFormula) this.formula; 
+		return this.formula; 
 	}
 	
 	@Override

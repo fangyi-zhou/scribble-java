@@ -37,7 +37,7 @@ public interface SType<K extends ProtoKind, B extends Seq<K, B>>
 	<T> T visitWith(STypeAgg<K, B, T> v) throws ScribException;
 	<T> T visitWithNoThrow(STypeAggNoThrow<K, B, T> v);
 
-	// Pass in an STypeGatherer::visit, e.g., n.(new RoleGatherer<Global, GSeq>()::visit)
+	// Pass in an STypeGatherer::visit, e.g., n.gather(new RoleGatherer<Global, GSeq>()::visit)
 	<T> Stream<T> gather(Function<SType<K, B>, Stream<T>> f);
 
 	// subclass equals should call this by: them.canEquals(this) 

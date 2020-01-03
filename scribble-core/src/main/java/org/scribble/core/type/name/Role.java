@@ -48,6 +48,7 @@ public class Role extends AbstractName<RoleKind>  // CHECKME: type.name package 
 		return n.canEquals(this) && super.equals(o);
 	}
 	
+	@Override
 	public boolean canEquals(Object o)
 	{
 		return o instanceof Role;
@@ -57,7 +58,7 @@ public class Role extends AbstractName<RoleKind>  // CHECKME: type.name package 
 	public int hashCode()
 	{
 		int hash = 2741;
-		hash = 31 * super.hashCode();
+		hash = 31 * hash + super.hashCode();
 		return hash;
 	}
 }

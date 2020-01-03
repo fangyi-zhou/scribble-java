@@ -23,10 +23,13 @@ import org.scribble.core.model.endpoint.actions.EDisconnect;
 import org.scribble.core.model.endpoint.actions.EServerWrap;
 import org.scribble.core.model.global.SConfig;
 import org.scribble.core.model.global.SSingleBuffers;
+import org.scribble.core.type.kind.PayElemKind;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.PayElemType;
 import org.scribble.core.type.name.Role;
 import org.scribble.ext.assrt.core.job.AssrtCore;
+import org.scribble.ext.assrt.core.lang.global.AssrtCoreGProtocol;
 import org.scribble.ext.assrt.core.lang.local.AssrtCoreLProjection;
 import org.scribble.ext.assrt.core.model.endpoint.AssrtCoreEModelFactory;
 import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreEAcc;
@@ -35,6 +38,7 @@ import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreERecv;
 import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreEReq;
 import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreESend;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
+import org.scribble.ext.assrt.core.type.formula.AssrtAVarFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinBFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBinCompFormula;
@@ -58,6 +62,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	private final Map<Role, EFsm> P;          
 	private final SSingleBuffers Q;  // null value means connected and empty -- dest -> src -> msg
 
+	private final Map<AssrtIntVar, DataName> Env;  // TODO: refactor
+
 	private final Map<Role, Set<AssrtIntVar>> K;  // Conflict between having this in the state, and formula building?
 	private final Map<Role, Set<AssrtBFormula>> F;  // N.B. because F not in equals/hash, "final" receive in a recursion doesn't get built -- cf., unsat check only for send actions
 	private final Map<Role, Map<AssrtIntVar, AssrtAFormula>> V;
@@ -78,7 +84,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			SSingleBuffers Q, Map<Role, Set<AssrtIntVar>> K,
 			Map<Role, Set<AssrtBFormula>> F,
 			Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
-			Map<Role, Set<AssrtBFormula>> R)
+			Map<Role, Set<AssrtBFormula>> R,
+
+			Map<AssrtIntVar, DataName> Env
+
+	)
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename
 			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes)
 	{
@@ -91,6 +101,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		this.R = Collections.unmodifiableMap(R);
 		//this.rename = Collections.unmodifiableMap(rename);
 		//this.scopes = Collections.unmodifiableMap(scopes);
+
+		this.Env = Collections.unmodifiableMap(Env);
+
 	}
 
 	@Override
@@ -189,6 +202,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				this.rename);*/
 		//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes = copyScopes(this.scopes);
 
+		Map<AssrtIntVar, DataName> Env = new HashMap<>(this.Env);
+
 		P.put(self, succ);
 		/*//Q.get(es.peer).put(self, es.toTrueAssertion());  // HACK FIXME: cf. AssrtSConfig::fire
 		//Q.get(es.peer).put(self, es);  // Now doing toTrueAssertion on message at receive side
@@ -201,11 +216,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				a.peer, a.mid, a.payload, a.ass);//, a.sexprs);//, rename.get(self));
 		SSingleBuffers Q = this.Q.send(self, msg);
 
-		updateOutput(self, a, succ, K, F, V, R); //rename, scopes);
+		updateOutput(self, a, succ, K, F, V, R, Env); //rename, scopes);
 		//updateR(R, self, es);
 
 		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, K,
-				F, V, R); //rename scopes, 
+				F, V, R, Env); //rename scopes, 
 	}
 
   // CHECKME: only need to update self entries of Maps -- almost: except for addAnnotOpensToF, and some renaming via Streams
@@ -213,11 +228,15 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			Map<Role, Set<AssrtIntVar>> K, 
 			Map<Role, Set<AssrtBFormula>> F,
 			Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
-			Map<Role, Set<AssrtBFormula>> R)
+			Map<Role, Set<AssrtBFormula>> R,
+
+			Map<AssrtIntVar, DataName> Env
+
+	)
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename)
 			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes)
 	{
-		updateKFVR(self, a, a.getAssertion(), succ, K, F, V, R);
+		updateKFVR(self, a, a.getAssertion(), succ, K, F, V, R, Env);
 		
 		/*for (PayElemType<?> e : ((EAction) a).payload.elems)  // CHECKME: EAction closest base type
 		{
@@ -247,7 +266,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			Map<Role, Set<AssrtIntVar>> K, 
 			Map<Role, Set<AssrtBFormula>> F,
 			Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
-			Map<Role, Set<AssrtBFormula>> R)
+			Map<Role, Set<AssrtBFormula>> R,
+
+			Map<AssrtIntVar, DataName> Env
+
+	)
 	{
 		//- first K, F
 		//-- for each pay elem:
@@ -260,9 +283,13 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		{
 			if (e instanceof AssrtAnnotDataName)
 			{
-				AssrtIntVar v = ((AssrtAnnotDataName) e).var;
+				AssrtAnnotDataName cast = (AssrtAnnotDataName) e;
+				AssrtIntVar v = cast.var;
 				gcF(Fself, v);
 				Kself.add(v);
+
+				Env.put(v, cast.data);
+
 			}
 			else
 			{
@@ -417,7 +444,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			if (f.equals(AssrtTrueFormula.TRUE) 
 					|| f.getIntVars().stream().anyMatch(x -> x.toString().startsWith("_"))
 					) 
-							// Pruning if formula contains "old" var renamed by renameOldVarsInF -- FIXME refactor to renameOldVarsInF?  CHECKME: other sources of renaming?
+			// Pruning if formula contains "old" var renamed by renameOldVarsInF -- FIXME refactor to renameOldVarsInF? -- old
+			// CHECKME: other sources of renaming? AssrtCoreSGraphBuilderUtil::renameFormula and makeFreshIntVar
 			{
 				i.remove();
 			}
@@ -437,18 +465,26 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				this.rename);*/
 		//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes = copyScopes(this.scopes);
 
+		Map<AssrtIntVar, DataName> Env = new HashMap<>(this.Env);
+
 		P.put(self, succ);
 		AssrtCoreEMsg msg = (AssrtCoreEMsg) this.Q.getQueue(self).get(a.peer);  // null is \epsilon
 		SSingleBuffers Q = this.Q.receive(self, a);
 
 		updateInput(self, a, msg, //msg.shadow, 
-				succ, K, F, V, R//, rename, scopes
+				succ, K, F, V, R,//, rename, scopes
+
+				Env
+
 				);
 		//updateR(R, self, es);
 
 		return ((AssrtCoreSModelFactory) this.mf.global).AssrtCoreSConfig(P, Q, K,
-				F, V, R
+				F, V, R,
 		//, rename scopes
+
+				Env
+
 				);
 	}
 
@@ -459,12 +495,15 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			EFsm succ,
 			Map<Role, Set<AssrtIntVar>> K, Map<Role, Set<AssrtBFormula>> F,
 			Map<Role, Map<AssrtIntVar, AssrtAFormula>> V,
-			Map<Role, Set<AssrtBFormula>> R
+			Map<Role, Set<AssrtBFormula>> R,
 			//Map<Role, Map<AssrtIntVarFormula, AssrtIntVarFormula>> rename  // CHECKME: EAction closest base type -- ?
 			//Map<Role, LinkedHashMap<Integer, Set<AssrtIntVar>>> scopes
+
+			Map<AssrtIntVar, DataName> Env
+
 			)
 	{
-		updateKFVR(self, a, msg.getAssertion(), succ, K, F, V, R);
+		updateKFVR(self, a, msg.getAssertion(), succ, K, F, V, R, Env);
 
 		/*for (PayElemType<?> pt : ((EAction) a).payload.elems)
 		{
@@ -728,6 +767,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					return false;  // CHECKME: input-side assertions? currently hardcoded to True
 				}
 			};
+
 			Set<AssrtCoreEAction> tmp = curr.getDetActions().stream()
 					.filter(x -> isErr.test(x)).map(x -> (AssrtCoreEAction) x)
 					.collect(Collectors.toSet());
@@ -745,6 +785,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			GProtoName fullname)
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext().getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -760,7 +802,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 
 			core.verbosePrintln("\n[assrt-core] Checking assertion progress for "
 					+ self + "(" + curr.id + "):");
-			core.verbosePrintln("  squashed = " + squashed.toSmt2Formula());
+			core.verbosePrintln("  squashed = " + squashed.toSmt2Formula(sorts));
 			if (!core.checkSat(fullname,
 					Stream.of(squashed).collect(Collectors.toSet())))
 			{
@@ -828,25 +870,50 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			{
 				return AssrtTrueFormula.TRUE;  // If any assertion is True, then assertion-progress trivially satisfied
 			}
-			Set<AssrtIntVarFormula> assVars = a.payload.elems.stream()
+
+			/*Set<AssrtIntVarFormula> assVars = a.payload.elems.stream()
 					.map(x -> AssrtFormulaFactory
 							.AssrtIntVar(((AssrtAnnotDataName) x).var.toString()))
 					.collect(Collectors.toSet());  // ex-qualify pay annot vars, this will be *some* set of values
 					// N.B. includes the case for recursion cycles where var is "already" in F
-					// CHECKME: Adding even if var not used?
+					// CHECKME: Adding even if var not used?*/
+			Set<AssrtAVarFormula> assVars = getAssVars(a);
+
 			if (!assVars.isEmpty()) // CHECKME: currently never empty
 			{
 				ass = AssrtFormulaFactory.AssrtExistsFormula(new LinkedList<>(assVars),
 						ass);
 			}
-			rhs = (rhs == null) 
+			rhs = (rhs == null)
 					? ass
 					: AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.Or, rhs, ass);
 		}
-		
+
 		AssrtBFormula impli = AssrtFormulaFactory
 				.AssrtBinBool(AssrtBinBFormula.Op.Imply, lhs, rhs);
 		return forallQuantifyFreeVars(core, fullname, impli).squash();  // Finally, fa-quantify all free vars
+	}
+
+	private Set<AssrtAVarFormula> getAssVars(EAction a)
+	{
+		Set<AssrtAVarFormula> assVars = new HashSet<>();
+		for (PayElemType<? extends PayElemKind> e : a.payload.elems)
+		{
+			AssrtAnnotDataName d = (AssrtAnnotDataName) e;
+			switch (d.data.toString()) // TODO: refactor
+			{
+			case "int":
+			case "String":
+				assVars.add(AssrtFormulaFactory.AssrtIntVar(d.var.toString()));
+				break;
+			/*assVars.add(AssrtFormulaFactory.AssrtStrVar(d.var.toString()));
+			break;*/
+			default:
+				throw new RuntimeException(
+						"[assrt-core] Unsupported data type: " + d.data);
+			}
+		}
+		return assVars;
 	}
 	
 	// For batching?
@@ -862,6 +929,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, Set<AssrtCoreEAction>> getAssertUnsatErrors(AssrtCore core,
 			GProtoName fullname)
 	{
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -902,7 +972,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				core.verbosePrintln(
 						"\n[assrt-core] Checking assertion satisfiability for " + self
 								+ "(" + curr.id + "):");
-				core.verbosePrintln("  squashed = " + squashed.toSmt2Formula());
+				core.verbosePrintln("  squashed = " + squashed.toSmt2Formula(sorts));
 				if (!core.checkSat(fullname,
 						Stream.of(squashed).collect(Collectors.toSet())))
 				{
@@ -1014,6 +1084,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, AssrtEState> getInitRecAssertErrors(AssrtCore core,
 			GProtoName fullname)
 	{
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1028,7 +1101,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			core.verbosePrintln(
 					"\n[assrt-core] Checking initial recursion assertion for " + self
 							+ "(" + curr.id + "):");
-			core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula());
+			core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula(sorts));
 			if (!core.checkSat(fullname,
 					Stream.of(toCheck).collect(Collectors.toSet())))
 			{
@@ -1048,7 +1121,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		{
 			return AssrtTrueFormula.TRUE;
 		}
-		
+
 		AssrtCoreLProjection proj = (AssrtCoreLProjection) core.getContext()
 				.getProjectedInlined(fullname, self);
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = proj.statevars;
@@ -1079,7 +1152,6 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			toCheck = AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.Imply,
 					Vconj, toCheck);
 		}
-
 		return forallQuantifyFreeVars(core, fullname, toCheck).squash();
 	}			
 
@@ -1112,6 +1184,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, Set<AssrtCoreEAction>> getRecAssertErrors(AssrtCore core,
 			GProtoName fullname)
 	{
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1129,7 +1204,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					
 				core.verbosePrintln("\n[assrt-core] Checking recursion assertion for "
 						+ self + "(" + curr.id + "):");
-				core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula());
+					core.verbosePrintln("  squashed = " + toCheck.toSmt2Formula(sorts));
 				boolean b = core.checkSat(fullname,
 						Stream.of(toCheck).collect(Collectors.toSet()));
 				core.verbosePrintln("");
@@ -1331,7 +1406,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 
 			// Next for rhs, rename target rec state vars
 			List<AssrtIntVar> old = new LinkedList<>(succ.getStateVars().keySet());  // FIXME state var ordering w.r.t. exprs
-			List<AssrtIntVarFormula> fresh = old.stream().map(v -> makeFreshIntVar(v))
+			List<AssrtIntVarFormula> fresh = old.stream()
+					.map(AssrtCoreSConfig::makeFreshIntVar)
 					.collect(Collectors.toList());
 			Iterator<AssrtIntVarFormula> ifresh = fresh.iterator();
 			for (AssrtIntVar v : old)
@@ -1351,7 +1427,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			rhs = AssrtFormulaFactory.AssrtBinBool(AssrtBinBFormula.Op.And, rhs,
 					svarsConj);
 			rhs = AssrtFormulaFactory.AssrtExistsFormula(
-					fresh.stream().map(x -> AssrtFormulaFactory.AssrtIntVar(x.toString()))
+					fresh.stream().map(x -> AssrtFormulaFactory.AssrtIntVar(x.toString()))  // HERE: factor out with getAssVars -- refactor to return AssrtAVar
 							.collect(Collectors.toList()),
 					rhs);
 
@@ -1506,9 +1582,10 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	private static AssrtIntVarFormula makeFreshIntVar(AssrtIntVar var)
 	{
 		return AssrtFormulaFactory
-				.AssrtIntVar("_" + var.toString() + AssrtCoreSConfig.counter++);  // HACK
+				.AssrtIntVar("_" + var.toString() + "__" + AssrtCoreSConfig.counter++);  // HACK
 	}
 
+	// Only statevars?
 	private static AssrtBFormula forallQuantifyFreeVars(AssrtCore core,
 			GProtoName fullname, AssrtBFormula bform)
 	{
@@ -1519,10 +1596,13 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 				.collect(Collectors.toSet());
 		if (!free.isEmpty())
 		{
-			bform = AssrtFormulaFactory.AssrtForallFormula(
-					free.stream().map(v -> AssrtFormulaFactory.AssrtIntVar(v.toString()))
-							.collect(Collectors.toList()),
-					bform);
+			List<AssrtAVarFormula> tmp = free.stream()
+					.map(
+							x -> 
+							AssrtFormulaFactory.AssrtIntVar(x.toString())  // convert from AssrtIntVar to AssrtIntVarFormula -- N.B. AssrtIntVar now means var of any sort
+					)
+					.collect(Collectors.toList());
+			bform = AssrtFormulaFactory.AssrtForallFormula(tmp, bform);
 		}
 		return bform;
 	}

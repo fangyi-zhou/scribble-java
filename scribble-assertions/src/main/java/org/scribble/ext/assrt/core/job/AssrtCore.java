@@ -13,8 +13,11 @@
  */
 package org.scribble.ext.assrt.core.job;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +32,7 @@ import org.scribble.core.model.endpoint.EModelFactory;
 import org.scribble.core.model.global.SGraph;
 import org.scribble.core.model.global.SModelFactory;
 import org.scribble.core.type.kind.Global;
+import org.scribble.core.type.name.DataName;
 import org.scribble.core.type.name.GProtoName;
 import org.scribble.core.type.name.ModuleName;
 import org.scribble.core.type.name.ProtoName;
@@ -97,7 +101,7 @@ public class AssrtCore extends Core
 	public void runPasses() throws ScribException
 	{
 		runSyntaxTransformPasses();
-		runGlobalSyntaxWfPasses();
+		runGlobalSyntaxWfPasses();  // TODO: consider WF problems that prevent inlining above (e.g., distinct annot vars, AssrtCoreContextget.Inlined)
 		runProjectionPasses();  // CHECKME: can try before validation (i.e., including syntactic WF), to promote greater tool feedback? (cf. CommandLine output "barrier")
 		//runProjectionSyntaxWfPasses();
 		runEfsmBuildingPasses();  // Currently, unfair-transform graph building must come after syntactic WF --- TODO fix graph building to prevent crash ?
@@ -136,8 +140,12 @@ public class AssrtCore extends Core
 					.assrtCoreGather(  // TODO: factor out with base gatherer
 							new AssrtCoreIntVarGatherer<Global, AssrtCoreGType>()::visit)
 					.collect(Collectors.toList());*/
-			List<AssrtIntVar> vs = ((AssrtCoreGProtocol) this.context
-					.getInlined(fullname)).type.collectAnnotDataVarDecls().stream()
+			AssrtCoreGProtocol proto = (AssrtCoreGProtocol) this.context
+					.getInlined(fullname);
+			Map<AssrtIntVar, DataName> svars = new HashMap<>();
+			proto.statevars.entrySet()
+					.forEach(x -> svars.put(x.getKey(), x.getValue().getSort(svars)));
+			List<AssrtIntVar> vs = proto.type.collectAnnotDataVarDecls(svars).stream()
 							.map(x -> x.var).collect(Collectors.toList());
 			Set<AssrtIntVar> distinct = new HashSet<>(vs);
 			if (vs.size() != distinct.size())
@@ -221,8 +229,10 @@ public class AssrtCore extends Core
 			}
 			case NONE:
 			{
+			Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) getContext()
+					.getInlined(fullname)).type.getBoundSortEnv(Collections.emptyMap());
 				verbosePrintln("\n[assrt-core] [WARNING] Skipping sat check:\n\t"
-						+ bforms.stream().map(f -> f.toSmt2Formula() + "\n\t")
+					+ bforms.stream().map(f -> f.toSmt2Formula(sorts) + "\n\t")
 								.collect(Collectors.joining("")));
 				return true;
 			}
