@@ -228,6 +228,7 @@ aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0 && try<=3" {
    authed() from S to C;
  } or {
    again() from A to S; @"try<3"
+   //again() from S to C;
    again() from S to C; @"try<3"
    do Auth(C, S, A); @"<try+1>"
  } or {
