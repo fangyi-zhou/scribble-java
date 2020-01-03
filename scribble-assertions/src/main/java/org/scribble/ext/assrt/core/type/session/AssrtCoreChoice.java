@@ -43,7 +43,7 @@ public abstract class AssrtCoreChoice<K extends ProtoKind,
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
 		Map<AssrtIntVar, DataName> res = this.cases.keySet().stream()
 				.flatMap(x -> x.pay.stream())
@@ -51,7 +51,7 @@ public abstract class AssrtCoreChoice<K extends ProtoKind,
 		Map<AssrtIntVar, DataName> tmp = new HashMap<>(ctxt);
 		tmp.putAll(res);
 		res.putAll(this.cases.values().stream()
-				.flatMap(x -> x.getSortEnv(tmp).entrySet().stream())
+				.flatMap(x -> x.getBoundSortEnv(tmp).entrySet().stream())
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
 		return res;
 	}

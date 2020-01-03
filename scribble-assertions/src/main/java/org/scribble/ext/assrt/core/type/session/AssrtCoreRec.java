@@ -44,7 +44,7 @@ public abstract class AssrtCoreRec<K extends ProtoKind,
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
 		Map<AssrtIntVar, DataName> sorts = new HashMap<>();
 		Map<AssrtIntVar, DataName> tmp = new HashMap<>(ctxt);
@@ -57,7 +57,7 @@ public abstract class AssrtCoreRec<K extends ProtoKind,
 			tmp.put(svar, sort);
 		}
 		tmp.putAll(sorts);
-		sorts.putAll(this.body.getSortEnv(tmp));
+		sorts.putAll(this.body.getBoundSortEnv(tmp));
 		return sorts;
 	}
 	

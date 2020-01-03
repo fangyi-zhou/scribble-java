@@ -61,7 +61,7 @@ public abstract class AssrtCoreDo<K extends ProtoKind, B extends AssrtCoreSType<
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
 		throw new RuntimeException("Deprecated for " + getClass() + ":\n\t" + this);
 	}

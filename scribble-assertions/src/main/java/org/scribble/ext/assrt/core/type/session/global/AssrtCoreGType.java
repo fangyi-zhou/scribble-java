@@ -22,6 +22,7 @@ public interface AssrtCoreGType extends AssrtCoreSType<Global, AssrtCoreGType>
 	
 	// CHECKME: refactor as visitors? -- base Core visitor pattern not currently ported
 
+	// FIXME TODO: deprecate -- all vars now Assrt(Int)Var
 	AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env);  // FIXME: throw ScribbleException, WF errors
 	
 	// CHECKME: some may need to be factored up to base
@@ -32,6 +33,7 @@ public interface AssrtCoreGType extends AssrtCoreSType<Global, AssrtCoreGType>
 	AssrtCoreLType projectInlined(AssrtCore core, Role self, AssrtBFormula f)
 			throws AssrtCoreSyntaxException;  // N.B. checking "mergability"
 	
-	List<AssrtAnnotDataName> collectAnnotDataVarDecls();  // Currently only the vars are needed (not the data types)
+	List<AssrtAnnotDataName> collectAnnotDataVarDecls(
+			Map<AssrtIntVar, DataName> env);  // Currently only the vars are needed (not the data types)
 }
 

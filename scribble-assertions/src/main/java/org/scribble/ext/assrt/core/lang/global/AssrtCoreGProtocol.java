@@ -84,7 +84,7 @@ public class AssrtCoreGProtocol extends GProtocol
 			DataName sort = e.getValue().getSort(sorts);
 			sorts.put(e.getKey(), sort);
 		}
-		sorts.putAll(this.type.getSortEnv(sorts));
+		sorts.putAll(this.type.getBoundSortEnv(sorts));
 		return sorts;
 	}
 

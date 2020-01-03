@@ -73,7 +73,7 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		String vs = this.vars.stream()
-				.map(v -> AssrtForallIntVarsFormula.foo(env, v))
+				.map(v -> AssrtForallIntVarsFormula.getSmt2VarDecl(env, v))
 				.collect(Collectors.joining(" "));
 		String expr = this.expr.toSmt2Formula(env);
 		return "(exists (" + vs + ") " + expr + ")";

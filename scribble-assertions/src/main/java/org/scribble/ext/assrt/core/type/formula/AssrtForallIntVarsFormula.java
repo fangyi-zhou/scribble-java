@@ -71,13 +71,13 @@ public class AssrtForallIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String vs = this.vars.stream().map(v -> foo(env, v))
+		String vs = this.vars.stream().map(v -> getSmt2VarDecl(env, v))
 				.collect(Collectors.joining(" "));
 		String expr = this.expr.toSmt2Formula(env);
 		return "(forall (" + vs + ") " + expr + ")";
 	}
 
-	protected static String foo(Map<AssrtIntVar, DataName> env,
+	protected static String getSmt2VarDecl(Map<AssrtIntVar, DataName> env,
 			AssrtAVarFormula v)
 	{
 		if (v instanceof AssrtIntVarFormula)

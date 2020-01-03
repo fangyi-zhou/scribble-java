@@ -60,7 +60,8 @@ public class AssrtCoreGEnd extends AssrtCoreEnd<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(
+			Map<AssrtIntVar, DataName> env)
 	{
 		return Collections.emptyList();
 	}

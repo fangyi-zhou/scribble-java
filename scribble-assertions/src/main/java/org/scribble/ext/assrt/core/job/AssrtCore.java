@@ -14,6 +14,7 @@
 package org.scribble.ext.assrt.core.job;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -139,8 +140,12 @@ public class AssrtCore extends Core
 					.assrtCoreGather(  // TODO: factor out with base gatherer
 							new AssrtCoreIntVarGatherer<Global, AssrtCoreGType>()::visit)
 					.collect(Collectors.toList());*/
-			List<AssrtIntVar> vs = ((AssrtCoreGProtocol) this.context
-					.getInlined(fullname)).type.collectAnnotDataVarDecls().stream()
+			AssrtCoreGProtocol proto = (AssrtCoreGProtocol) this.context
+					.getInlined(fullname);
+			Map<AssrtIntVar, DataName> svars = new HashMap<>();
+			proto.statevars.entrySet()
+					.forEach(x -> svars.put(x.getKey(), x.getValue().getSort(svars)));
+			List<AssrtIntVar> vs = proto.type.collectAnnotDataVarDecls(svars).stream()
 							.map(x -> x.var).collect(Collectors.toList());
 			Set<AssrtIntVar> distinct = new HashSet<>(vs);
 			if (vs.size() != distinct.size())
@@ -225,7 +230,7 @@ public class AssrtCore extends Core
 			case NONE:
 			{
 			Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) getContext()
-					.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
+					.getInlined(fullname)).type.getBoundSortEnv(Collections.emptyMap());
 				verbosePrintln("\n[assrt-core] [WARNING] Skipping sat check:\n\t"
 					+ bforms.stream().map(f -> f.toSmt2Formula(sorts) + "\n\t")
 								.collect(Collectors.joining("")));

@@ -231,12 +231,15 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(Map<AssrtIntVar, DataName> env)
 	{
 		List<AssrtAnnotDataName> res = this.cases.keySet().stream()
 				.flatMap(a -> a.pay.stream()).collect(Collectors.toList());
-		this.cases.keySet().forEach(
-				a -> res.addAll(this.cases.get(a).collectAnnotDataVarDecls()));
+		for (AssrtCoreMsg m : this.cases.keySet()) {
+			Map<AssrtIntVar, DataName> tmp = new HashMap<>(env);
+			m.pay.forEach(x -> tmp.put(x.var, x.data));
+			res.addAll(this.cases.get(m).collectAnnotDataVarDecls(tmp));
+		}
 		return res;
 	}
 	

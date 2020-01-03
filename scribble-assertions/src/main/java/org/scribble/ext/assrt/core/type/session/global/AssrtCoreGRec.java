@@ -2,6 +2,7 @@ package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 	{
 		Map<AssrtIntVar, DataName> env1 = new HashMap<>(env);
 		this.statevars.entrySet()
-				.forEach(x -> env1.put(x.getKey(), new DataName("int")));  // FIXME "int" -- cf. AssrtCoreContext.getInlined  // No: now all vars are Assrt(Int)Var
+				.forEach(x -> env1.put(x.getKey(), x.getValue().getSort(env1)));
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
 		this.statevars.entrySet().forEach(x -> svars.put(x.getKey(),
 				(AssrtAFormula) x.getValue().disamb(env1)));  // Unnecessary, disallow mutual var refs?
@@ -86,13 +87,20 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 	}
 
 	@Override
-	public List<AssrtAnnotDataName> collectAnnotDataVarDecls()
+	public List<AssrtAnnotDataName> collectAnnotDataVarDecls(
+			Map<AssrtIntVar, DataName> env)
 	{
-		List<AssrtAnnotDataName> res = this.body.collectAnnotDataVarDecls();
+		List<AssrtAnnotDataName> res = new LinkedList<>();
+		Map<AssrtIntVar, DataName> env1 = new HashMap<>(env);
+		this.statevars.entrySet()
+				.forEach(x -> env1.put(x.getKey(), x.getValue().getSort(env1)));
+
 		this.statevars.keySet().stream().forEachOrdered(
-				v -> res.add(new AssrtAnnotDataName(v, new DataName("int"))));  // TODO: factor out int constant
+				v -> res.add(new AssrtAnnotDataName(v, env1.get(v))));
 		/*this.ass.getIntVars().stream().forEachOrdered(
 				v -> res.add(new AssrtAnnotDataType(v, new DataType("int"))));  // No: not decls*/
+
+		res.addAll(this.body.collectAnnotDataVarDecls(env1));
 		return res;
 	}
 

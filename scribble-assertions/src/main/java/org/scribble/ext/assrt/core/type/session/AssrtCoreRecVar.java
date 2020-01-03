@@ -38,7 +38,7 @@ public abstract class AssrtCoreRecVar<K extends ProtoKind,
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
+	public Map<AssrtIntVar, DataName> getBoundSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
 		return Collections.emptyMap();
 	}

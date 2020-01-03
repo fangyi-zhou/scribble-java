@@ -58,7 +58,8 @@ public class AssrtAmbigVarFormula extends AssrtAVarFormula
 	@Override
 	public DataName getSort(Map<AssrtIntVar, DataName> env)
 	{
-		throw new RuntimeException("Shouldn't get in here: " + this.name);
+		//throw new RuntimeException("Shouldn't get in here: " + this.name);
+		return env.get(new AssrtIntVar(toString()));
 	}
 	
 	@Override
