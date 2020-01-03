@@ -219,8 +219,11 @@ NUMBER:
 	(DIGIT)+
 ; 
 
-STRINGLITT: '\'' (LETTER | DIGIT | WHITESPACE)* '\''
-| '\"' (LETTER | DIGIT | WHITESPACE)* '\"' ;
+STRING_LIT:
+	'\'' (LETTER | DIGIT | WHITESPACE)* '\''
+|
+	'\"' (LETTER | DIGIT | WHITESPACE)* '\"' 
+;
 
 fragment LETTER:
 	'a'..'z' | 'A'..'Z'
@@ -242,13 +245,7 @@ intlit:
 ; 
 	
 stringlit:
-	//'\'' str=(LETTER | DIGIT)* '\'' -> ^(STRVAL $str)
-	//'\'' str=(LETTER | DIGIT)+ '\'' -> ^(STRVAL $str)
-	//'\'' str=LETTER* '\'' -> ^(STRVAL $str)
-	//'\'' str=IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
-	//IDENTIFIER -> ^(STRVAL IDENTIFIER)
-	//'\'' str=(LETTER | DIGIT | WHITESPACE)+ '\'' -> ^(STRVAL $str)
-	t=STRINGLITT -> ^(STRVAL {AssertionsParser.parseStringLit($t)})
+	t=STRING_LIT -> ^(STRVAL {AssertionsParser.parseStringLit($t)})
 ;
 
 

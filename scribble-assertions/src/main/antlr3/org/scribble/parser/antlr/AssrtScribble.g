@@ -302,23 +302,23 @@ fragment SYMBOL:
 |
 	'&' | '?' | '!'  | UNDERSCORE
 |
-	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*' | '\''  // Assrt
+	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*' // Assrt
 ;
 
-fragment SYMBOLa:
-	'{' | '}' | '(' | ')' | '[' | ']' | ':' | '/' | '\\' | '.' | '\#'
-|
-	'&' | '?' | '!'  | UNDERSCORE
-|
-	'|' | '¬' | ',' | '=' | '<' | '>' | '+' | '-' | '*' | '\"'
+fragment SYMBOL_SINGLE:
+ SYMBOL | '\'' 
 ;
+
+fragment SYMBOL_DOUBLE:
+ SYMBOL | '\"' 
+ ;
 
 // Comes after SYMBOL due to an ANTLR syntax highlighting issue involving quotes.
 // CHECKME: parser doesn't work without locating the quotes here? (e.g., if inlined into parser rules)
 EXTID:
-	'\"' (LETTER | DIGIT | SYMBOL | WHITESPACE)* '\"'  // N.B. WHITESPACE, for assertions white space
+	'\"' (LETTER | DIGIT | SYMBOL_SINGLE | WHITESPACE)* '\"'  // N.B. WHITESPACE, for assertions white space
 |
-	'\'' (LETTER | DIGIT | SYMBOLa | WHITESPACE)* '\''  // N.B. WHITESPACE, for assertions white space
+	'\'' (LETTER | DIGIT | SYMBOL_DOUBLE | WHITESPACE)* '\''  // N.B. WHITESPACE, for assertions white space
 ;
 
 fragment LETTER:
