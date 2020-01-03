@@ -38,7 +38,9 @@ tokens
 	 * categories) i.e. the labels used to distinguish resulting AST nodes.
 	 * The value of these token variables doesn't matter, only the token
 	 * (i.e. variable) names themselves are used (for AST node root text
-	 * field)
+	 * field).
+	 * 
+	 * These token names are cased on by AssrtAntlrToFormulaParser.
 	 */
 	//EMPTY_LIST = 'EMPTY_LIST';
 	
@@ -232,7 +234,8 @@ intlit:
 	
 stringlit:
 	//'\'' str=(LETTER | DIGIT)* '\'' -> ^(STRVAL $str)
-	'\'' str=IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
+	'\'' IDENTIFIER '\'' -> ^(STRVAL IDENTIFIER)
+	//IDENTIFIER -> ^(STRVAL IDENTIFIER)
 ;
 
 

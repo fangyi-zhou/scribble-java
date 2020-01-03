@@ -15,5 +15,6 @@ public interface AssrtCoreSType<K extends ProtoKind,
 {
 	<T> Stream<T> assrtCoreGather(Function<AssrtCoreSType<K, B>, Stream<T>> f);
 
-	Map<AssrtIntVar, DataName> getSortEnv();
+	// Return *additional* env items -- i.e., ctxt intersect with return is empty
+	Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt);
 }

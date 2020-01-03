@@ -35,6 +35,12 @@ public class AssrtIntVarFormula extends AssrtAVarFormula
 	{
 		return AssrtFormulaFactory.AssrtIntVar(this.name);
 	}
+
+	@Override
+	public DataName getSort(Map<AssrtIntVar, DataName> env)
+	{
+		return env.get(toName());
+	}
 	
 	@Override
 	public String toString()

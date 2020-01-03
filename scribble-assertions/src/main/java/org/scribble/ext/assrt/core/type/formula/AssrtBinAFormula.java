@@ -11,7 +11,7 @@ import org.sosy_lab.java_smt.api.IntegerFormulaManager;
 import org.sosy_lab.java_smt.api.NumeralFormula.IntegerFormula;
 
 
-// Binary arithmetic
+// Binary arithmetic -- FIXME: AssrtIntVarFormula no longer just ints
 public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<IntegerFormula>
 {
 	public enum Op
@@ -65,6 +65,19 @@ public class AssrtBinAFormula extends AssrtAFormula implements AssrtBinFormula<I
 	{
 		return AssrtFormulaFactory.AssrtBinArith(this.op, this.left.subs(old, neu),
 				this.right.subs(old, neu));
+	}
+
+	@Override
+	public DataName getSort(Map<AssrtIntVar, DataName> env)
+	{
+		DataName intSort = new DataName("int");
+		if (!this.left.getSort(env).equals(intSort)
+				|| !this.right.getSort(env).equals(intSort))
+		{
+			throw new RuntimeException(
+					"[assrt-core][TODO] Non-int operators: " + this);
+		}
+		return intSort;
 	}
 
 	@Override

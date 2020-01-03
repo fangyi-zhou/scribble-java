@@ -26,7 +26,7 @@ public abstract class AssrtCoreEnd<K extends ProtoKind,
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv()
+	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
 		return Collections.emptyMap();
 	}

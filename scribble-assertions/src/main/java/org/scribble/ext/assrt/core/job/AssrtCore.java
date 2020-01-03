@@ -13,6 +13,7 @@
  */
 package org.scribble.ext.assrt.core.job;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -224,7 +225,7 @@ public class AssrtCore extends Core
 			case NONE:
 			{
 			Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) getContext()
-					.getInlined(fullname)).type.getSortEnv();
+					.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
 				verbosePrintln("\n[assrt-core] [WARNING] Skipping sat check:\n\t"
 					+ bforms.stream().map(f -> f.toSmt2Formula(sorts) + "\n\t")
 								.collect(Collectors.joining("")));

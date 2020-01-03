@@ -33,6 +33,12 @@ public class AssrtStrVarFormula extends AssrtAVarFormula
 		//return AssrtFormulaFactory.AssrtStrVar(this.name);
 		throw new RuntimeException("Shouldn't get in here: " + this);
 	}
+
+	@Override
+	public DataName getSort(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Class deprecated.");
+	}
 	
 	@Override
 	public String toString()

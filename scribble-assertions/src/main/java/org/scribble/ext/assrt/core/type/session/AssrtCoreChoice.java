@@ -1,7 +1,9 @@
 package org.scribble.ext.assrt.core.type.session;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,14 +43,16 @@ public abstract class AssrtCoreChoice<K extends ProtoKind,
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv()
+	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
 		Map<AssrtIntVar, DataName> res = this.cases.keySet().stream()
 				.flatMap(x -> x.pay.stream())
 				.collect(Collectors.toMap(x -> x.var, x -> x.data));
+		Map<AssrtIntVar, DataName> tmp = new HashMap<>(ctxt);
+		tmp.putAll(res);
 		res.putAll(this.cases.values().stream()
-				.flatMap(x -> x.getSortEnv().entrySet().stream())
-				.collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue())));
+				.flatMap(x -> x.getSortEnv(tmp).entrySet().stream())
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue)));
 		return res;
 	}
 

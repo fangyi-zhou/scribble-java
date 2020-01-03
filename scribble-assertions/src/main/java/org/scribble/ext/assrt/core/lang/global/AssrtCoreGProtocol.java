@@ -13,9 +13,11 @@
  */
 package org.scribble.ext.assrt.core.lang.global;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -72,21 +74,17 @@ public class AssrtCoreGProtocol extends GProtocol
 		this.assertion = assrt;
 	}
 
+	// Implicit empty context -- cf. AssrtCoreSType#getSortEnv
 	public Map<AssrtIntVar, DataName> getSortEnv()
 	{
-		Map<AssrtIntVar, DataName> sorts = this.type.getSortEnv();
-		sorts.putAll(this.statevars.keySet().stream()
-				.collect(Collectors.toMap(x -> x, x -> new DataName("int"))));  // FIXME: statevar sorts
-		/*sorts.putAll(this.statevars.keySet().stream()
-				.collect(
-						Collectors.toMap(x -> new AssrtIntVar("_" + x.toString(), "FIXME"),
-								x -> new DataName("int"))));  // FIXME HACK*/
-		/*Map<AssrtIntVar, DataName> res = new HashMap<>(sorts); // FIXME HACK
-		res.putAll(sorts.entrySet().stream()
-				.collect(Collectors.toMap(
-						x -> new AssrtIntVar("_" + x.getKey().toString(), "FIXME"),
-						x -> x.getValue())));
-		return res;*/
+		Map<AssrtIntVar, DataName> sorts = new HashMap<>();
+		for (Entry<AssrtIntVar, AssrtAFormula> e : this.statevars.entrySet())
+		{
+			// statevar sorts -- left-to-right scoping (cf. LinkedHashMap)
+			DataName sort = e.getValue().getSort(sorts);
+			sorts.put(e.getKey(), sort);
+		}
+		sorts.putAll(this.type.getSortEnv(sorts));
 		return sorts;
 	}
 

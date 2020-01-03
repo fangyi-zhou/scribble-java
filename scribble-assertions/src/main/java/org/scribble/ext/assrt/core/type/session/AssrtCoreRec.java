@@ -1,7 +1,9 @@
 package org.scribble.ext.assrt.core.type.session;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,11 +44,20 @@ public abstract class AssrtCoreRec<K extends ProtoKind,
 	}
 
 	@Override
-	public Map<AssrtIntVar, DataName> getSortEnv()
+	public Map<AssrtIntVar, DataName> getSortEnv(Map<AssrtIntVar, DataName> ctxt)
 	{
-		Map<AssrtIntVar, DataName> sorts = this.body.getSortEnv();
-		/*sorts.putAll(statevars.keySet().stream()
-				.collect(Collectors.toMap(x -> x, x -> new DataName("int"))));  // FIXME: statevar sorts*/
+		Map<AssrtIntVar, DataName> sorts = new HashMap<>();
+		Map<AssrtIntVar, DataName> tmp = new HashMap<>(ctxt);
+		for (Entry<AssrtIntVar, AssrtAFormula> e : this.statevars.entrySet())  // statevar sorts
+		{
+			// statevar sorts -- left-to-right scoping (cf. LinkedHashMap)
+			DataName sort = e.getValue().getSort(tmp);
+			AssrtIntVar svar = e.getKey();
+			sorts.put(svar, sort);
+			tmp.put(svar, sort);
+		}
+		tmp.putAll(sorts);
+		sorts.putAll(this.body.getSortEnv(tmp));
 		return sorts;
 	}
 	

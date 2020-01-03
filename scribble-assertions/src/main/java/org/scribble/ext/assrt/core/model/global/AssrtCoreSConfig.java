@@ -785,7 +785,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
 		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv();
+				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -929,7 +929,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			GProtoName fullname)
 	{
 		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv();
+				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1083,7 +1083,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			GProtoName fullname)
 	{
 		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv();
+				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1182,7 +1182,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			GProtoName fullname)
 	{
 		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv();
+				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{

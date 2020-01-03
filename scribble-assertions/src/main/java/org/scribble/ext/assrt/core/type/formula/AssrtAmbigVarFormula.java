@@ -39,21 +39,26 @@ public class AssrtAmbigVarFormula extends AssrtAVarFormula
 	public //AssrtPayElemType<?> 
 	AssrtIntVar toName()
 	{
-		throw new RuntimeException("Shouldn't get in here: " + name);
+		throw new RuntimeException("Shouldn't get in here: " + this.name);
 	}
 
 	@Override
 	public AssrtAmbigVarFormula squash()
 	{
 		//return AssrtFormulaFactory.AssrtIntVar(this.name);
-		throw new RuntimeException("Shouldn't get in here: " + name);
+		throw new RuntimeException("Shouldn't get in here: " + this.name);
 	}
 
 	@Override
 	public AssrtAmbigVarFormula subs(AssrtAVarFormula old, AssrtAVarFormula neu)
 	{
-		//return this.equals(old) ? neu : this;
-		throw new RuntimeException("Shouldn't get in here: " + name);
+		throw new RuntimeException("Shouldn't get in here: " + this.name);
+	}
+
+	@Override
+	public DataName getSort(Map<AssrtIntVar, DataName> env)
+	{
+		throw new RuntimeException("Shouldn't get in here: " + this.name);
 	}
 	
 	@Override

@@ -40,6 +40,12 @@ public class AssrtStrValFormula extends AssrtAFormula
 	}
 
 	@Override
+	public DataName getSort(Map<AssrtIntVar, DataName> env)
+	{
+		return new DataName("String");  // TODO: factor out constant
+	}
+
+	@Override
 	public boolean isConstant()
 	{
 		return true;
