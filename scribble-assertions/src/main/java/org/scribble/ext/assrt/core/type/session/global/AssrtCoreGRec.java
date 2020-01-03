@@ -41,7 +41,7 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 	{
 		Map<AssrtIntVar, DataName> env1 = new HashMap<>(env);
 		this.statevars.entrySet()
-				.forEach(x -> env1.put(x.getKey(), new DataName("int")));  // FIXME "int" -- cf. AssrtCoreContext.getInlined
+				.forEach(x -> env1.put(x.getKey(), new DataName("int")));  // FIXME "int" -- cf. AssrtCoreContext.getInlined  // No: now all vars are Assrt(Int)Var
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
 		this.statevars.entrySet().forEach(x -> svars.put(x.getKey(),
 				(AssrtAFormula) x.getValue().disamb(env1)));  // Unnecessary, disallow mutual var refs?

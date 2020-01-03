@@ -444,7 +444,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			if (f.equals(AssrtTrueFormula.TRUE) 
 					|| f.getIntVars().stream().anyMatch(x -> x.toString().startsWith("_"))
 					) 
-							// Pruning if formula contains "old" var renamed by renameOldVarsInF -- FIXME refactor to renameOldVarsInF?  CHECKME: other sources of renaming?
+			// Pruning if formula contains "old" var renamed by renameOldVarsInF -- FIXME refactor to renameOldVarsInF? -- old
+			// CHECKME: other sources of renaming? AssrtCoreSGraphBuilderUtil::renameFormula and makeFreshIntVar
 			{
 				i.remove();
 			}
@@ -784,8 +785,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			GProtoName fullname)
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
-		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext().getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -928,8 +929,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, Set<AssrtCoreEAction>> getAssertUnsatErrors(AssrtCore core,
 			GProtoName fullname)
 	{
-		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1082,8 +1084,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, AssrtEState> getInitRecAssertErrors(AssrtCore core,
 			GProtoName fullname)
 	{
-		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1181,8 +1184,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	public Map<Role, Set<AssrtCoreEAction>> getRecAssertErrors(AssrtCore core,
 			GProtoName fullname)
 	{
-		Map<AssrtIntVar, DataName> sorts = ((AssrtCoreGProtocol) core.getContext()
-				.getInlined(fullname)).type.getSortEnv(Collections.emptyMap());
+		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
+				.getInlined(fullname));
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1402,7 +1406,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 
 			// Next for rhs, rename target rec state vars
 			List<AssrtIntVar> old = new LinkedList<>(succ.getStateVars().keySet());  // FIXME state var ordering w.r.t. exprs
-			List<AssrtIntVarFormula> fresh = old.stream().map(v -> makeFreshIntVar(v))
+			List<AssrtIntVarFormula> fresh = old.stream()
+					.map(AssrtCoreSConfig::makeFreshIntVar)
 					.collect(Collectors.toList());
 			Iterator<AssrtIntVarFormula> ifresh = fresh.iterator();
 			for (AssrtIntVar v : old)
@@ -1577,9 +1582,10 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	private static AssrtIntVarFormula makeFreshIntVar(AssrtIntVar var)
 	{
 		return AssrtFormulaFactory
-				.AssrtIntVar("_" + var.toString() + AssrtCoreSConfig.counter++);  // HACK
+				.AssrtIntVar("_" + var.toString() + "__" + AssrtCoreSConfig.counter++);  // HACK
 	}
 
+	// Only statevars?
 	private static AssrtBFormula forallQuantifyFreeVars(AssrtCore core,
 			GProtoName fullname, AssrtBFormula bform)
 	{
@@ -1592,9 +1598,9 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 		{
 			List<AssrtAVarFormula> tmp = free.stream()
 					.map(
-							x -> (/*x.sort.equals("String")  // Cast needed?
-										? AssrtFormulaFactory.AssrtStrVar(x.toString()) :*/ AssrtFormulaFactory.AssrtIntVar(x.toString())))
-					// e.g., convert from AssrtIntVar to AssrtIntVarFormula // FIXME: factor out constants, int default dodgy
+							x -> 
+							AssrtFormulaFactory.AssrtIntVar(x.toString())  // convert from AssrtIntVar to AssrtIntVarFormula -- N.B. AssrtIntVar now means var of any sort
+					)
 					.collect(Collectors.toList());
 			bform = AssrtFormulaFactory.AssrtForallFormula(tmp, bform);
 		}

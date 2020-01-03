@@ -1,5 +1,6 @@
 package org.scribble.ext.assrt.core.model.global;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +33,11 @@ public class AssrtCoreSGraphBuilder extends SGraphBuilder
 		/*Map<Role, AssrtEState> assrtE0 = egraphs.entrySet().stream().collect(
 				Collectors.toMap(Entry::getKey, e -> (AssrtEState) e.getValue().init));*/
 		AssrtCoreSGraphBuilderUtil util = (AssrtCoreSGraphBuilderUtil) this.util;
-		AssrtCoreSConfig c0 = util.createInitConfig(egraphs, isExplicit);
+
+		AssrtCoreSConfig c0 = util.createInitConfig(egraphs, isExplicit,
+				Collections.emptyMap());  // FIXME: should take statevar sorts from top-level (but need to refactor base `build` params)
+		// ^Currently just empty, hacked inside AssrtCoreSConfig for now
+
 		AssrtCoreSState init = (AssrtCoreSState) util.newState(c0);
 		
 		Set<SState> todo = new HashSet<>();

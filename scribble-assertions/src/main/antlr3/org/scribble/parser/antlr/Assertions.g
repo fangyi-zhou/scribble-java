@@ -219,7 +219,8 @@ NUMBER:
 	(DIGIT)+
 ; 
 
-STRINGLITT: '\'' (LETTER | DIGIT | WHITESPACE)* '\'' ;
+STRINGLITT: '\'' (LETTER | DIGIT | WHITESPACE)* '\''
+| '\"' (LETTER | DIGIT | WHITESPACE)* '\"' ;
 
 fragment LETTER:
 	'a'..'z' | 'A'..'Z'

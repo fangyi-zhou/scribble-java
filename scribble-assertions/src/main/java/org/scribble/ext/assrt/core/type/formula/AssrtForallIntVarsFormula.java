@@ -71,28 +71,57 @@ public class AssrtForallIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	@Override
 	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
-		String vs = this.vars.stream().map(v ->
-			{
-				if (v instanceof AssrtIntVarFormula)
-				{
-					AssrtIntVar tmp = new AssrtIntVar(v.toString());
-					DataName sort = env.get(tmp);
-					if (!env.containsKey(tmp))
-					{
-						//throw new RuntimeException("Unknown var: " + v);
-						sort = new DataName("int");  // FIXME HACK
-					}
-					return "(" + v.toSmt2Formula(env) + " " + toSmt2Sort(sort)
-							+ ")";
-				}
-				else
-				{
-					throw new RuntimeException("Unknown var type: " + v.getClass());
-				}
-			}
-		).collect(Collectors.joining(" "));
+		String vs = this.vars.stream().map(v -> foo(env, v))
+				.collect(Collectors.joining(" "));
 		String expr = this.expr.toSmt2Formula(env);
 		return "(forall (" + vs + ") " + expr + ")";
+	}
+
+	protected static String foo(Map<AssrtIntVar, DataName> env,
+			AssrtAVarFormula v)
+	{
+		if (v instanceof AssrtIntVarFormula)
+		{
+			String name = v.toString();
+			AssrtIntVar tmp = new AssrtIntVar(name);
+			DataName sort = null;
+			if (env.containsKey(tmp))
+			{
+				sort = env.get(tmp);
+			}
+			else
+			{
+				// FIXME HACK statevar sorts
+				if (name.startsWith("_")) // cf. AssrtCoreSGraphBuilderUtil::renameFormula and AssrtCoreSConfig::makeFreshIntVar 
+				{
+					AssrtIntVar hack = new AssrtIntVar(name.substring(1));
+					if (env.containsKey(hack))
+					{
+						sort = env.get(hack);
+					}
+					else if (name.contains("__"))  // FIXME HACK cf. AssrtCoreSConfig::makeFreshIntVar 
+					{
+						hack = new AssrtIntVar(
+								name.substring(1, name.lastIndexOf("_") - 1));
+						if (env.containsKey(hack))
+						{
+							sort = env.get(hack);
+						}
+					}
+				}
+			}
+			if (sort == null)
+			{
+				//sort = new DataName("int");
+				throw new RuntimeException("Unknown var: " + v);
+			}
+			return "(" + v.toSmt2Formula(env) + " " + toSmt2Sort(sort)
+					+ ")";
+		}
+		else
+		{
+			throw new RuntimeException("Unknown var type: " + v.getClass());
+		}
 	}
 
 	@Override

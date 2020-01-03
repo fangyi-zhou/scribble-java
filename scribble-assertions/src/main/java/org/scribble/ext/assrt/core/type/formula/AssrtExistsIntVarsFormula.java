@@ -73,26 +73,7 @@ public class AssrtExistsIntVarsFormula extends AssrtQuantifiedIntVarsFormula
 	public String toSmt2Formula(Map<AssrtIntVar, DataName> env)
 	{
 		String vs = this.vars.stream()
-				.map(v ->
-					{
-						if (v instanceof AssrtIntVarFormula)
-						{
-							AssrtIntVar tmp = new AssrtIntVar(v.toString());
-							DataName sort = env.get(tmp);
-							if (!env.containsKey(tmp))
-							{
-								//throw new RuntimeException("Unknown var: " + v);
-								sort = new DataName("int");  // FIXME HACK
-							}
-							return "(" + v.toSmt2Formula(env) + " "
-									+ AssrtForallIntVarsFormula.toSmt2Sort(sort)
-									+ ")";
-						}
-						else
-						{
-							throw new RuntimeException("Unknown var type: " + v.getClass());
-						}
-					})
+				.map(v -> AssrtForallIntVarsFormula.foo(env, v))
 				.collect(Collectors.joining(" "));
 		String expr = this.expr.toSmt2Formula(env);
 		return "(exists (" + vs + ") " + expr + ")";
