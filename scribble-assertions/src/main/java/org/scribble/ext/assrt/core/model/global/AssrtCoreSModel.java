@@ -1,17 +1,25 @@
 package org.scribble.ext.assrt.core.model.global;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.scribble.core.model.endpoint.EFsm;
+import org.scribble.core.model.endpoint.actions.EAction;
+import org.scribble.core.model.endpoint.actions.ESend;
 import org.scribble.core.model.global.SModel;
 import org.scribble.core.model.global.SState;
 import org.scribble.core.type.name.GProtoName;
+import org.scribble.core.type.name.Role;
 import org.scribble.ext.assrt.core.job.AssrtCore;
 import org.scribble.ext.assrt.core.job.AssrtCoreArgs;
+import org.scribble.ext.assrt.core.model.endpoint.action.AssrtCoreEAction;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
 
 // 1-bounded LTS
@@ -50,11 +58,11 @@ public class AssrtCoreSModel extends SModel
 										.getAssertProgressChecks(this.core, fullname)
 										.stream())
 								.collect(Collectors.toSet()));
-				/*fs.addAll(
+				fs.addAll(
 						all.stream()
 								.flatMap(s -> ((AssrtCoreSConfig) s.config)
 										.getAssertSatChecks(this.core, fullname).stream())
-								.collect(Collectors.toSet()));*/
+								.collect(Collectors.toSet()));
 				fs.addAll(
 						((AssrtCoreSConfig) this.graph.init.config)
 								.getInitRecAssertChecks(this.core, fullname));
@@ -95,12 +103,75 @@ public class AssrtCoreSModel extends SModel
 			}
 		}
 
-		if (res.isEmpty() && batch && !batchSat)  // Testing batch vs. base
+		// Must come as second pass after initial collection for all states above
+		if (!res.isEmpty())
 		{
-			throw new RuntimeException("FIXME: ");
+			SortedMap<Integer, AssrtCoreSStateErrors> tmp = res;
+			res = new TreeMap<>();
+			for (Entry<Integer, AssrtCoreSStateErrors> e : tmp.entrySet())
+			{
+				Integer ssid_err = e.getKey();
+				AssrtCoreSStateErrors errs = e.getValue();
+				AssrtCoreSStateErrors tmp2 = errs;
+				for (Entry<Role, Set<AssrtCoreEAction>> e1 : errs.assunsat.entrySet())
+				{
+					Role subj_unsat = e1.getKey();
+					for (AssrtCoreEAction a_unsat : e1.getValue())
+					{
+						EAction unsat_a1 = (EAction) a_unsat;
+						found: for (SState ss_nonerr : (Iterable<SState>) this.graph.states.values()
+								.stream().filter(
+										x -> !tmp.keySet().contains(x.id))::iterator)  // Subsumes x.id != id -- narrow down to only filter states with unsat errors?
+						{
+							EFsm efsm = ss_nonerr.config.efsms.get(subj_unsat);
+							if (efsm.curr.id == this.graph.states.get(ssid_err).config.efsms
+									.get(subj_unsat).curr.id
+									&& ss_nonerr.getDetActions().stream()
+											.anyMatch(x -> x.subj.equals(subj_unsat)
+													&& x.mid.equals(unsat_a1.mid)))
+							{
+								Map<Role, Set<AssrtCoreEAction>> assunsat = new HashMap<>(
+										tmp2.assunsat);
+								HashSet<AssrtCoreEAction> tmp3 = new HashSet<>(
+										assunsat.get(subj_unsat));
+								tmp3.remove(a_unsat);
+								if (tmp3.isEmpty())
+								{
+									assunsat.remove(subj_unsat);
+								}
+								else
+								{
+								assunsat.put(subj_unsat, tmp3);
+								}
+								tmp2 = new AssrtCoreSStateErrors(tmp2, assunsat);
+								break found;
+							}
+						}
+					}
+				}
+				res.put(ssid_err, tmp2);
+			}
+			SortedMap<Integer, AssrtCoreSStateErrors> tmp4 = res;
+			tmp4.keySet().stream().collect(Collectors.toList()).forEach(x ->
+				{
+					if (tmp4.get(x).isEmpty())
+					{
+						tmp4.remove(x);
+					}
+				});
 		}
 
+		/*if (batch && !batchSat && res.isEmpty())  // Testing batch vs. base -- now inconvenient due to new assrt-unsat
+		{
+			throw new RuntimeException("[FIXME] ");
+		}*/
+
 		return res;
+	}
+
+	protected Map<SState, Set<ESend>> getAssrtUnsatErrors()
+	{
+		return null;
 	}
 }
 

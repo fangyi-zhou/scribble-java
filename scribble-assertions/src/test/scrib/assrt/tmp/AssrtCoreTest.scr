@@ -168,7 +168,7 @@ type <dotnet> "System.String" from "..." as String;
 
 
 // - fix syntax -- TODO: deprecate AssrtStateVarAnnotNode for an intermediary CommonTree
-// - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
+// - deprecate "constant propagation" -- prevents loops counting or any example where assertion not valid now under constant but could be later
 
 
 /*  // Testing statevar WF -- init exprs (constants)
@@ -178,7 +178,7 @@ global protocol Proto1(role A, role B) @'<x:=0>' {
 //*/
 
 
-//*  // Testing statevar WF -- loop counting
+/*  // Testing statevar WF -- loop counting
 global protocol Proto1(role A, role B) @'<x:=0>' {
 	choice at A {
 		1() from A to B;  @'x<5'
@@ -189,6 +189,30 @@ global protocol Proto1(role A, role B) @'<x:=0>' {
 }
 //*/
 
+
+
+/* // Testing new unsat
+global protocol Proto1(role A, role B) {
+	choice at A {
+		1() from A to B;
+	} or {
+		2() from A to B;  @'False'
+	}
+}
+//*/
+
+
+//*  // Testing new unsat
+global protocol Proto1(role A, role B) @'<x:=0>' {
+	choice at A {
+		1() from A to B;
+		//do Proto1(A, B);  @'<0>'  // Bad
+		do Proto1(A, B);  @'<1>'
+	} or {
+		2() from A to B;  @'x=1'
+	}
+}
+//*/
 
 
 
