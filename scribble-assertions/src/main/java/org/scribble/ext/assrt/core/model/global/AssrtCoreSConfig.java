@@ -62,7 +62,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	private final Map<Role, EFsm> P;          
 	private final SSingleBuffers Q;  // null value means connected and empty -- dest -> src -> msg
 
-	private final Map<AssrtIntVar, DataName> Env;  // TODO: refactor
+	private final Map<AssrtIntVar, DataName> Env;  // TODO: refactor -- CHECKME: currently only used for payload vars?
 
 	private final Map<Role, Set<AssrtIntVar>> K;  // Conflict between having this in the state, and formula building?
 	private final Map<Role, Set<AssrtBFormula>> F;  // N.B. because F not in equals/hash, "final" receive in a recursion doesn't get built -- cf., unsat check only for send actions
@@ -786,8 +786,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext().getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -932,8 +932,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1088,8 +1088,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1189,8 +1189,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
