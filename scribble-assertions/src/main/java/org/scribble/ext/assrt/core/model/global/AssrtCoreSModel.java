@@ -106,59 +106,7 @@ public class AssrtCoreSModel extends SModel
 		// Must come as second pass after initial collection for all states above
 		if (!res.isEmpty())
 		{
-			SortedMap<Integer, AssrtCoreSStateErrors> tmp = res;
-			res = new TreeMap<>();
-			for (Entry<Integer, AssrtCoreSStateErrors> e : tmp.entrySet())
-			{
-				Integer ssid_err = e.getKey();
-				AssrtCoreSStateErrors errs = e.getValue();
-				AssrtCoreSStateErrors tmp2 = errs;
-				for (Entry<Role, Set<AssrtCoreEAction>> e1 : errs.assunsat.entrySet())
-				{
-					Role subj_unsat = e1.getKey();
-					for (AssrtCoreEAction a_unsat : e1.getValue())
-					{
-						EAction unsat_a1 = (EAction) a_unsat;
-						found: for (SState ss_nonerr : (Iterable<SState>) this.graph.states.values()
-								.stream().filter(
-										x -> !tmp.keySet().contains(x.id))::iterator)  // Subsumes x.id != id -- narrow down to only filter states with unsat errors?
-						{
-							EFsm efsm = ss_nonerr.config.efsms.get(subj_unsat);
-							if (efsm.curr.id == this.graph.states.get(ssid_err).config.efsms
-									.get(subj_unsat).curr.id
-									&& ss_nonerr.getDetActions().stream()
-											.anyMatch(x -> x.subj.equals(subj_unsat)
-													&& x.mid.equals(unsat_a1.mid)))
-							{
-								Map<Role, Set<AssrtCoreEAction>> assunsat = new HashMap<>(
-										tmp2.assunsat);
-								HashSet<AssrtCoreEAction> tmp3 = new HashSet<>(
-										assunsat.get(subj_unsat));
-								tmp3.remove(a_unsat);
-								if (tmp3.isEmpty())
-								{
-									assunsat.remove(subj_unsat);
-								}
-								else
-								{
-								assunsat.put(subj_unsat, tmp3);
-								}
-								tmp2 = new AssrtCoreSStateErrors(tmp2, assunsat);
-								break found;
-							}
-						}
-					}
-				}
-				res.put(ssid_err, tmp2);
-			}
-			SortedMap<Integer, AssrtCoreSStateErrors> tmp4 = res;
-			tmp4.keySet().stream().collect(Collectors.toList()).forEach(x ->
-				{
-					if (tmp4.get(x).isEmpty())
-					{
-						tmp4.remove(x);
-					}
-				});
+			res = relaxAssrtUnsat(res);
 		}
 
 		/*if (batch && !batchSat && res.isEmpty())  // Testing batch vs. base -- now inconvenient due to new assrt-unsat
@@ -166,6 +114,66 @@ public class AssrtCoreSModel extends SModel
 			throw new RuntimeException("[FIXME] ");
 		}*/
 
+		return res;
+	}
+
+	// TODO: new assrt-unsat no longer strictly a safety property?
+	private SortedMap<Integer, AssrtCoreSStateErrors> relaxAssrtUnsat(
+			SortedMap<Integer, AssrtCoreSStateErrors> res)
+	{
+		SortedMap<Integer, AssrtCoreSStateErrors> tmp = res;
+		res = new TreeMap<>();
+		for (Entry<Integer, AssrtCoreSStateErrors> e : tmp.entrySet())
+		{
+			Integer ssid_err = e.getKey();
+			AssrtCoreSStateErrors errs = e.getValue();
+			AssrtCoreSStateErrors tmp2 = errs;
+			for (Entry<Role, Set<AssrtCoreEAction>> e1 : errs.assunsat.entrySet())
+			{
+				Role subj_unsat = e1.getKey();
+				for (AssrtCoreEAction a_unsat : e1.getValue())
+				{
+					EAction unsat_a1 = (EAction) a_unsat;
+					found: for (SState ss_nonerr : (Iterable<SState>) this.graph.states.values()
+							.stream().filter(
+									x -> !tmp.keySet().contains(x.id))::iterator)  // Subsumes x.id != id -- narrow down to only filter states with unsat errors?
+					{
+						EFsm efsm = ss_nonerr.config.efsms.get(subj_unsat);
+						if (efsm.curr.id == this.graph.states.get(ssid_err).config.efsms
+								.get(subj_unsat).curr.id
+								&& ss_nonerr.getDetActions().stream()
+										.anyMatch(x -> x.subj.equals(subj_unsat)
+												&& x.mid.equals(unsat_a1.mid)))
+						{
+							Map<Role, Set<AssrtCoreEAction>> assunsat = new HashMap<>(
+									tmp2.assunsat);
+							HashSet<AssrtCoreEAction> tmp3 = new HashSet<>(
+									assunsat.get(subj_unsat));
+							tmp3.remove(a_unsat);
+							if (tmp3.isEmpty())
+							{
+								assunsat.remove(subj_unsat);
+							}
+							else
+							{
+							assunsat.put(subj_unsat, tmp3);
+							}
+							tmp2 = new AssrtCoreSStateErrors(tmp2, assunsat);
+							break found;
+						}
+					}
+				}
+			}
+			res.put(ssid_err, tmp2);
+		}
+		SortedMap<Integer, AssrtCoreSStateErrors> tmp4 = res;
+		tmp4.keySet().stream().collect(Collectors.toList()).forEach(x ->
+			{
+				if (tmp4.get(x).isEmpty())
+				{
+					tmp4.remove(x);
+				}
+			});
 		return res;
 	}
 

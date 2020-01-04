@@ -340,7 +340,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 									.anyMatch(x -> x.toString().equals(next.toString())) // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g -- no: broken, get `y=y`
 							? next  // A "direct" equality to a state var can be left "unerased" without increasing the overall state space -- no: e.g., do Fib <y, z1>, `x=y` where (old) `y` unerased conflicts with `y=z1`
 											: (AssrtAFormula) renameFormula(next);*/
-					/* // Deprecated special case treatment of statevar init exprs and "constant propagation" (and constants) from model building
+					/* // Deprecated special case treatment of statevar init exprs and "constant propagation" (and constants) from model building -- now restored
 					if (next instanceof AssrtIntVarFormula)
 					{
 						Optional<AssrtIntValFormula> con = isConst(Vself_orig,
@@ -355,11 +355,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 						sexpr = (AssrtAFormula) renameFormula(next);
 					}*/
 					if (next.isConstant())
-					// Deprecated special case treatment of statevar init exprs and "constant propagation" from model building
+					// Deprecated special case treatment of statevar init exprs and "constant propagation" from model building -- now restored
 					// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
 					{
-						sexpr = //makeFreshIntVar(new AssrtIntVar("__z"));  // TODO: factor out
-								AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
+						//sexpr = AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
+						sexpr = next;
 					}
 					else
 					{
