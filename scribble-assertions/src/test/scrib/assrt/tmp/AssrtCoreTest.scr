@@ -171,6 +171,37 @@ type <dotnet> "System.String" from "..." as String;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
+
+/*  // Testing statevar WF -- init exprs (constants)
+global protocol Proto1(role A, role B) @'<x:=0>' {
+	1() from A to B;  @'x=0'
+}
+//*/
+
+
+//*  // Testing statevar WF -- loop counting
+global protocol Proto1(role A, role B) @'<x:=0>' {
+	choice at A {
+		1() from A to B;  @'x<5'
+		do Proto1(A, B);  @'<x+1>'
+	} or {
+		2() from A to B;  @'x>=5'
+	}
+}
+//*/
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 global protocol Proto1(role A, role B) @'<x:="123">' {
 	//1() from A to B;
@@ -224,7 +255,7 @@ global protocol Proto1(role A, role B) {
 }
 //*/
 
-//* // FIXME: statevar syntax, sorts -- e.g., cf. AssrtCore.getInlined, statevars
+/* // FIXME: statevar syntax, sorts -- e.g., cf. AssrtCore.getInlined, statevars
 global protocol Proto2(role A, role B) { //@"<y:='def'>"
 	//1(x: String) from A to B; @"x='123 def'"
 	1(x: String) from A to B; @'x="abc"'
