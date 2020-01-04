@@ -171,10 +171,6 @@ type <dotnet> "System.String" from "..." as String;
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
 
 
-global protocol Proto1(role A, role B) @'<x:=0>' {
-	1() from A to B;
-}
-
 /*  // Testing statevar WF -- init exprs (constants)
 global protocol Proto1(role A, role B) @'<x:=0>' {
 	1() from A to B;  @'x=0'
@@ -182,7 +178,7 @@ global protocol Proto1(role A, role B) @'<x:=0>' {
 //*/
 
 
-/*  // Testing statevar WF -- loop counting
+//*  // Testing statevar WF -- loop counting
 global protocol Proto1(role A, role B) @'<x:=0>' {
 	choice at A {
 		1() from A to B;  @'x<5'

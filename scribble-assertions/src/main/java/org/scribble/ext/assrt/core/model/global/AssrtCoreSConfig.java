@@ -445,7 +445,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					|| f.getIntVars().stream().anyMatch(x -> x.toString().startsWith("_"))
 					) 
 			// Pruning if formula contains "old" var renamed by renameOldVarsInF -- FIXME refactor to renameOldVarsInF? -- old
-			// CHECKME: other sources of renaming? AssrtCoreSGraphBuilderUtil::renameFormula and makeFreshIntVar
+			// CHECKME: other sources of renaming? makeFreshIntVar, and AssrtCoreSGraphBuilderUtil::renameFormula
 			{
 				i.remove();
 			}

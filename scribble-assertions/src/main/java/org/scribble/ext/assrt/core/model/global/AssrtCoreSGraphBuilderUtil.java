@@ -85,12 +85,16 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 			Map<Role, EFsm> P)
 	{
 		Map<Role, Map<AssrtIntVar, AssrtAFormula>> R = P.entrySet()
-				.stream().collect(Collectors.toMap(Entry::getKey, e -> new HashMap<>(
-						//((AssrtEState) e.getValue().graph.init).getStateVars() // Deprecating special case treatment of statevar init exprs and "constants"
-						((AssrtEState) e.getValue().graph.init).getStateVars()
-								.entrySet().stream().collect(Collectors.toMap(Entry::getKey,
-									x -> renameIntVarAsFormula(x.getKey())))
-						)));
+				.stream().collect(Collectors.toMap(
+						Entry::getKey,
+						e -> new HashMap<>(
+								//((AssrtEState) e.getValue().graph.init).getStateVars() // Deprecating special case treatment of statevar init exprs and "constants"
+								((AssrtEState) e.getValue().graph.init).getStateVars()
+										.entrySet().stream().collect(Collectors.toMap(
+												Entry::getKey,
+												//x -> renameIntVarAsFormula(x.getKey())
+												x -> x.getValue()
+												)))));
 		/*Map<Role, Map<AssrtDataTypeVar, AssrtArithFormula>> R = P.keySet().stream().collect(Collectors.toMap(r -> r, r ->
 				Stream.of(false).collect(Collectors.toMap(
 						x -> AssrtCoreESend.DUMMY_VAR,
@@ -135,8 +139,7 @@ public class AssrtCoreSGraphBuilderUtil extends SGraphBuilderUtil
 	// "x" -> "_x" -- IntVar is a name, translating to a "fresh" formula
 	public static AssrtIntVarFormula renameIntVarAsFormula(AssrtIntVar svar)
 	{
-		return (AssrtIntVarFormula) renameFormula(
-				AssrtFormulaFactory.AssrtIntVar(//"_" + 
-						svar.toString()));
+		return (AssrtIntVarFormula) renameFormula(  // Adds "_" prefix
+				AssrtFormulaFactory.AssrtIntVar(svar.toString()));
 	}
 }
