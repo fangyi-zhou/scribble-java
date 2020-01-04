@@ -50,11 +50,11 @@ public class AssrtCoreSModel extends SModel
 										.getAssertProgressChecks(this.core, fullname)
 										.stream())
 								.collect(Collectors.toSet()));
-				fs.addAll(
+				/*fs.addAll(
 						all.stream()
 								.flatMap(s -> ((AssrtCoreSConfig) s.config)
 										.getAssertSatChecks(this.core, fullname).stream())
-								.collect(Collectors.toSet()));
+								.collect(Collectors.toSet()));*/
 				fs.addAll(
 						((AssrtCoreSConfig) this.graph.init.config)
 								.getInitRecAssertChecks(this.core, fullname));

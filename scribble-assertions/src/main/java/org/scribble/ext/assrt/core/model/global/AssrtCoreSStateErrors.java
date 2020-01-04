@@ -35,7 +35,7 @@ public class AssrtCoreSStateErrors extends SStateErrors
 
 	public final Map<Role, Set<AssrtCoreEAction>> unknown;
 	public final Map<Role, EState> assprog;  // TODO: rename -- state (safety) error, not "progress"
-	public final Map<Role, Set<AssrtCoreEAction>> assunsat;
+	//public final Map<Role, Set<AssrtCoreEAction>> assunsat;  // Cf. AssrtCoreSModel.getSafetyErrors, "manual" batching
 	public final Map<Role, AssrtEState> initrecass;
 	public final Map<Role, Set<AssrtCoreEAction>> recass;  // CHECKME: equiv of assprog for rec asserts?
 
@@ -56,8 +56,8 @@ public class AssrtCoreSStateErrors extends SStateErrors
 				.unmodifiableMap(cfg.getUnknownDataVarErrors(core, fullname));  // TODO: unmodifiable nested Sets
 		this.assprog = Collections
 				.unmodifiableMap(cfg.getAssertProgressErrors(core, fullname));  // Not actually a "progress" error
-		this.assunsat = Collections
-				.unmodifiableMap(cfg.getAssertUnsatErrors(core, fullname));
+		/*this.assunsat = Collections
+				.unmodifiableMap(cfg.getAssertUnsatErrors(core, fullname));*/
 
 		// N.B. special case treatment of statevar init exprs and "constants" deprecated from model building
 		// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + (e.g.) loop counting
@@ -72,7 +72,8 @@ public class AssrtCoreSStateErrors extends SStateErrors
 	public boolean isEmpty()
 	{
 		return super.isEmpty() && this.unknown.isEmpty() && this.assprog.isEmpty()
-				&& this.assunsat.isEmpty() && this.initrecass.isEmpty()
+		//&& this.assunsat.isEmpty()
+				&& this.initrecass.isEmpty()
 				&& this.recass.isEmpty();
 	}
 
@@ -99,10 +100,10 @@ public class AssrtCoreSStateErrors extends SStateErrors
 		{
 			res += "\n    Assertion-progress errors: " + this.assprog;
 		}
-		if (!this.assunsat.isEmpty())
+		/*if (!this.assunsat.isEmpty())
 		{
 			res += "\n    Unsatisfiable assertions: " + this.assunsat;
-		}
+		}*/
 		if (!this.initrecass.isEmpty())
 		{
 			res += "\n    Initial state-assertion errors: "
@@ -120,7 +121,8 @@ public class AssrtCoreSStateErrors extends SStateErrors
 	{
 		String sup = super.toString();
 		return (sup.isEmpty() ? "" : sup + ", ") + Stream
-				.<Map<?, ?>> of(this.unknown, this.assprog, this.assunsat, this.recass)
+				.<Map<?, ?>> of(this.unknown, this.assprog, //this.assunsat,
+						this.recass)
 				.filter(x -> !x.isEmpty()).map(x -> x.toString())
 				.collect(Collectors.joining(", "));
 	}
