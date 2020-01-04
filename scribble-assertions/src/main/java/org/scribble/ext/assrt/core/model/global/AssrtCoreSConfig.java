@@ -786,6 +786,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext().getInlined(fullname));
+		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
 		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
@@ -931,6 +932,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
+		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
 		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -1086,6 +1088,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
+		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
 		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -1186,6 +1189,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
+		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
 		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())

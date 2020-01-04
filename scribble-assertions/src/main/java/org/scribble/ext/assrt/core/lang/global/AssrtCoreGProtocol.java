@@ -74,6 +74,7 @@ public class AssrtCoreGProtocol extends GProtocol
 		this.assertion = assrt;
 	}
 
+	// Get all var->sort from proto statically -- assumes unique var names
 	// Implicit empty context -- cf. AssrtCoreSType#getSortEnv
 	public Map<AssrtIntVar, DataName> getSortEnv()
 	{
