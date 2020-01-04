@@ -62,7 +62,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	private final Map<Role, EFsm> P;          
 	private final SSingleBuffers Q;  // null value means connected and empty -- dest -> src -> msg
 
-	private final Map<AssrtIntVar, DataName> Env;  // TODO: refactor
+	private final Map<AssrtIntVar, DataName> Env;  // TODO: refactor -- CHECKME: currently only used for payload vars?
 
 	private final Map<Role, Set<AssrtIntVar>> K;  // Conflict between having this in the state, and formula building?
 	private final Map<Role, Set<AssrtBFormula>> F;  // N.B. because F not in equals/hash, "final" receive in a recursion doesn't get built -- cf., unsat check only for send actions
@@ -340,7 +340,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 									.anyMatch(x -> x.toString().equals(next.toString())) // CHECKME: dubious hacks, but cf. good.extensions.assrtcore.safety.assrtprog.statevar.AssrtCoreTest08f/g -- no: broken, get `y=y`
 							? next  // A "direct" equality to a state var can be left "unerased" without increasing the overall state space -- no: e.g., do Fib <y, z1>, `x=y` where (old) `y` unerased conflicts with `y=z1`
 											: (AssrtAFormula) renameFormula(next);*/
-					/* // Deprecated special case treatment of statevar init exprs and "constant propagation" (and constants) from model building
+					/* // Deprecated special case treatment of statevar init exprs and "constant propagation" (and constants) from model building -- now restored
 					if (next instanceof AssrtIntVarFormula)
 					{
 						Optional<AssrtIntValFormula> con = isConst(Vself_orig,
@@ -355,11 +355,11 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 						sexpr = (AssrtAFormula) renameFormula(next);
 					}*/
 					if (next.isConstant())
-					// Deprecated special case treatment of statevar init exprs and "constant propagation" from model building
+					// Deprecated special case treatment of statevar init exprs and "constant propagation" from model building -- now restored
 					// Original intuition was to model "base case" and "induction step", but this is incompatible with unsat checking + loop counting
 					{
-						sexpr = //makeFreshIntVar(new AssrtIntVar("__z"));  // TODO: factor out
-								AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
+						//sexpr = AssrtCoreSGraphBuilderUtil.renameIntVarAsFormula(svar);
+						sexpr = next;
 					}
 					else
 					{
@@ -445,7 +445,7 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 					|| f.getIntVars().stream().anyMatch(x -> x.toString().startsWith("_"))
 					) 
 			// Pruning if formula contains "old" var renamed by renameOldVarsInF -- FIXME refactor to renameOldVarsInF? -- old
-			// CHECKME: other sources of renaming? AssrtCoreSGraphBuilderUtil::renameFormula and makeFreshIntVar
+			// CHECKME: other sources of renaming? makeFreshIntVar, and AssrtCoreSGraphBuilderUtil::renameFormula
 			{
 				i.remove();
 			}
@@ -786,8 +786,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 			// CHECKME: not actually a "progress" error -- "safety"?
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext().getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		//return this.P.entrySet().stream().anyMatch(e ->  // anyMatch is on the endpoints (not actions)
 		Map<Role, EState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
@@ -932,8 +932,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1088,8 +1088,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		Map<Role, AssrtEState> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{
@@ -1189,8 +1189,8 @@ public class AssrtCoreSConfig extends SConfig  // TODO: not AssrtSConfig
 	{
 		AssrtCoreGProtocol proto = ((AssrtCoreGProtocol) core.getContext()
 				.getInlined(fullname));
-		// Could try to update Env with statevars from node labels, but need (ad hoc) sorts embedding
-		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars
+		// Could try to update Env with statevars from node labels, cf. AssrtEState#getStateVars
+		Map<AssrtIntVar, DataName> sorts = proto.getSortEnv();  // Must do on proto for outermost statevars (inlined does not embed top-level statevars as a rec)
 		Map<Role, Set<AssrtCoreEAction>> res = new HashMap<>();
 		for (Entry<Role, EFsm> e : this.P.entrySet())
 		{

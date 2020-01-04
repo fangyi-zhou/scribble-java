@@ -35,7 +35,7 @@ public class AssrtCoreSStateErrors extends SStateErrors
 
 	public final Map<Role, Set<AssrtCoreEAction>> unknown;
 	public final Map<Role, EState> assprog;  // TODO: rename -- state (safety) error, not "progress"
-	public final Map<Role, Set<AssrtCoreEAction>> assunsat;
+	public final Map<Role, Set<AssrtCoreEAction>> assunsat;  // Cf. AssrtCoreSModel.getSafetyErrors, "manual" batching
 	public final Map<Role, AssrtEState> initrecass;
 	public final Map<Role, Set<AssrtCoreEAction>> recass;  // CHECKME: equiv of assprog for rec asserts?
 
@@ -66,6 +66,18 @@ public class AssrtCoreSStateErrors extends SStateErrors
 				: Collections.emptyMap();
 		this.recass = Collections
 				.unmodifiableMap(cfg.getRecAssertErrors(core, fullname));
+	}
+
+	// HACK for new assrt-unsat
+	protected AssrtCoreSStateErrors(AssrtCoreSStateErrors old,
+			Map<Role, Set<AssrtCoreEAction>> assunsat)
+	{
+		super(old.state);  // Inefficient: rebuilds all the base errors
+		this.unknown = old.unknown;
+		this.assprog = old.assprog;
+		this.assunsat = Collections.unmodifiableMap(assunsat);
+		this.initrecass = old.initrecass;
+		this.recass = old.recass;
 	}
 	
 	@Override
@@ -120,7 +132,8 @@ public class AssrtCoreSStateErrors extends SStateErrors
 	{
 		String sup = super.toString();
 		return (sup.isEmpty() ? "" : sup + ", ") + Stream
-				.<Map<?, ?>> of(this.unknown, this.assprog, this.assunsat, this.recass)
+				.<Map<?, ?>> of(this.unknown, this.assprog, this.assunsat,
+						this.recass)
 				.filter(x -> !x.isEmpty()).map(x -> x.toString())
 				.collect(Collectors.joining(", "));
 	}

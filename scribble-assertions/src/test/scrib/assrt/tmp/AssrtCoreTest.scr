@@ -168,28 +168,98 @@ type <dotnet> "System.String" from "..." as String;
 
 
 // - fix syntax -- TODO: deprecate AssrtStateVarAnnotNode for an intermediary CommonTree
-// - deprecate "constant propagation" -- prevents loops counting or any example where assertion now valid now under constant but could be later
+// - deprecate "constant propagation" -- prevents loops counting or any example where assertion not valid now under constant but could be later
+
+
+//*
+global protocol Proto1(role A, role B) @'<x:=0>' {
+	1() from A to B;  @'x<=0'
+}
+//*/
+
+
+
+
+
+
+/*
+global protocol Proto1(role A, role B, role C) @'<x:=0>' {
+	choice at A {
+		1() from A to B;  @'x=0'	
+		1() from B to C;	@'x=0'  // Shows "global statevar" exprs must be statically fixed (not locally/dynamically set)
+	} or {
+		2() from A to B;  //@'x=1'	
+		2() from B to C;	//@'x=1'
+	}
+}
+//*/
+
+
+
+
 
 
 
 /*  // Testing statevar WF -- init exprs (constants)
 global protocol Proto1(role A, role B) @'<x:=0>' {
 	1() from A to B;  @'x=0'
+	//1() from A to B;  @'x=1'  // Bad
 }
 //*/
 
 
-//*  // Testing statevar WF -- loop counting
-global protocol Proto1(role A, role B) @'<x:=0>' {
+/*  // Testing statevar WF -- loop counting
+//global protocol Proto1(role A, role B) @'<x:=0>' {
+//global protocol Proto1(role A, role B) @'<x:=0> x >= 0' {
+global protocol Proto1(role A, role B) @'<x:=0> x >= 0 && x <= 5' {  // TODO: add tests
+//global protocol Proto1(role A, role B) @'<x:=0> x >= 0 && x < 5' {  // Bad
 	choice at A {
 		1() from A to B;  @'x<5'
 		do Proto1(A, B);  @'<x+1>'
+	} or {
+		2() from A to B;  @'x>=5'
+		//2() from A to B;  @'x=5'  // CHECKME: not allowed, not assrt-prog for _x case
+	}
+}
+//*/
+
+
+/*  // Testing statevar WF -- loop counting
+//global protocol Proto1(role A, role B) @'<x:=0>' {  // 2()@x>=5 not caught as unsat (without any statevar ass)
+global protocol Proto1(role A, role B) @'<x:=0> x >= 0' {  // Bad (as intended)  // TODO: add tests
+	choice at A {
+		1() from A to B;  @'x<5'
+		do Proto1(A, B);  @'<x-1>'
 	} or {
 		2() from A to B;  @'x>=5'
 	}
 }
 //*/
 
+
+
+/* // Testing new unsat
+global protocol Proto1(role A, role B) {
+	choice at A {
+		1() from A to B;
+	} or {
+		2() from A to B;  @'False'
+	}
+}
+//*/
+
+
+/*  // Testing new unsat
+global protocol Proto1(role A, role B) @'<x:=0>' {
+	choice at A {
+		1() from A to B;
+		do Proto1(A, B);  @'<0>'  // Bad
+		//do Proto1(A, B);  @'<1>'
+	} or {
+		2() from A to B;  @'x=1'
+	}
+}
+//*/
 
 
 

@@ -36,9 +36,11 @@ public class SProgressErrors
 		this.starved = Collections.unmodifiableMap(model.getRoleProgErrors());
 		Map<Set<SState>, Map<Role, Set<ESend>>> tmp = model.getEventualRecepErrors();
 		this.ignored = Collections.unmodifiableMap(tmp.entrySet().stream()
-				.collect(Collectors.toMap(Entry::getKey,
+				.collect(Collectors.toMap(
+						Entry::getKey,
 						x -> x.getValue().entrySet().stream()
-								.collect(Collectors.toMap(Entry::getKey,
+								.collect(Collectors.toMap(
+										Entry::getKey,
 										y -> Collections.unmodifiableSet(y.getValue()))))));
 	}
 	
