@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.scribble.ast.DirectedInteraction;
 import org.scribble.ast.Module;
@@ -231,7 +230,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 		Role src = null;
 		Role dst = null;
 		AssrtCoreActionKind<Global> kind = null;  // CHECKME: generic parameter ?
-		Map<AssrtCoreMsg, AssrtCoreGType> cases = new HashMap<>();
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases = new LinkedHashMap<>();
 		for (AssrtCoreGType c : children)
 		{
 			// Cases must be "action-guarded" (unary choices), as already parsed successfully
@@ -386,8 +385,10 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 		
 		AssrtCoreGType cont = parseSeq(is.subList(1, is.size()), rvs, false, false);  
 				// Subseqeuent choice/rec is guarded by (at least) this action
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases = new LinkedHashMap<>();
+		cases.put(msg, cont);
 		return this.tf.global.AssrtCoreGChoice((ScribNodeBase) is.get(0), src, kind,
-				dst, Stream.of(msg).collect(Collectors.toMap(x -> x, x -> cont)));
+				dst, cases);
 	}
 
 	private Op parseOp(DirectedInteraction<Global> n)

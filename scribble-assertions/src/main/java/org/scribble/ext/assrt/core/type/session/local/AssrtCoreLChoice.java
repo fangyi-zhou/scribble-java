@@ -1,6 +1,6 @@
 package org.scribble.ext.assrt.core.type.session.local;
 
-import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.Local;
@@ -14,7 +14,8 @@ public class AssrtCoreLChoice extends AssrtCoreChoice<Local, AssrtCoreLType>
 	public final Role peer;  // this.peer == super.role
 	
 	protected AssrtCoreLChoice(CommonTree source, Role peer,
-			AssrtCoreLActionKind kind, Map<AssrtCoreMsg, AssrtCoreLType> cases)
+			AssrtCoreLActionKind kind,
+			LinkedHashMap<AssrtCoreMsg, AssrtCoreLType> cases)
 	{
 		super(source, peer, kind, cases);
 		this.peer = peer;

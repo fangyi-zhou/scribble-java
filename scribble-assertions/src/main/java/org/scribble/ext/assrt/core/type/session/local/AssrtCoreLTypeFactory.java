@@ -2,7 +2,6 @@ package org.scribble.ext.assrt.core.type.session.local;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.Local;
@@ -34,7 +33,8 @@ public class AssrtCoreLTypeFactory extends LTypeFactoryImpl
 {
 
 	public AssrtCoreLChoice AssrtCoreLChoice(CommonTree source, Role peer,
-			AssrtCoreLActionKind kind, Map<AssrtCoreMsg, AssrtCoreLType> cases)
+			AssrtCoreLActionKind kind,
+			LinkedHashMap<AssrtCoreMsg, AssrtCoreLType> cases)
 	{
 		return new AssrtCoreLChoice(source, peer, kind, cases);
 	}

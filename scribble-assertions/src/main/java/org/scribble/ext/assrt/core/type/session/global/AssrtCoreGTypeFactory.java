@@ -2,7 +2,6 @@ package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.scribble.core.type.kind.Global;
@@ -32,7 +31,7 @@ public class AssrtCoreGTypeFactory extends GTypeFactoryImpl
 	
 	public AssrtCoreGChoice AssrtCoreGChoice(CommonTree source, Role src,
 			AssrtCoreGActionKind kind, Role dst,
-			Map<AssrtCoreMsg, AssrtCoreGType> cases)
+			LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases)
 	{
 		return new AssrtCoreGChoice(source, src, kind, dst, cases);
 	}

@@ -163,19 +163,51 @@ type <dotnet> "System.String" from "..." as String;
 //- statevar/arg syntax
 //- startvar usages? parameterised protocols, loop counting
 //- conflict between unsat checking, state vars (init values, constants) and recursion -- "strict" vs. potential unsat
-//- theorem: no assertion prog error at run-time -- no unsat theorem?
+//- theorem: no assertion prog error at run-time -- no unsat theorem? -- prog is sound, unsat is complete?
 
 
 
 // - fix syntax -- TODO: deprecate AssrtStateVarAnnotNode for an intermediary CommonTree
-// - deprecate "constant propagation" -- prevents loops counting or any example where assertion not valid now under constant but could be later
+// - deprecate "constant propagation" -- prevents loops counting or any example where assertion not valid now under constant but could be later -- now: restored
 
 
-//*
+global protocol Proto1(role A, role B, role C)
+{
+	1() from A to B;
+	do Proto1Aux(B, C);
+}
+
+aux global protocol Proto1Aux(role B, role C)
+{
+	2() from C to B;
+  choice at B
+  {
+  	3() from B to C;
+  	do Proto1Aux(B, C);
+  }
+  or
+  {
+  	4() from B to C;
+  }
+}
+
+
+
+/*
 global protocol Proto1(role A, role B) @'<x:=0>' {
-	1() from A to B;  @'x<=0'
+	1(x1:int) from A to B;  @'x1>=x'
+	do Proto1Aux(A, B);  @'<x1>'
+}
+
+aux global protocol Proto1Aux(role A, role B) @'<y:=0> y>=0' {
+//aux global protocol Proto1Aux(role A, role B) @'<y:=0> y>=1' {
+	2(y1:int) from B to A;  @'y1>y'
 }
 //*/
+
+
+// - rename intvar
+// - remove disamb
 
 
 

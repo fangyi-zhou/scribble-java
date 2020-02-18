@@ -1,6 +1,7 @@
 package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,7 +42,7 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 
 	protected AssrtCoreGChoice(CommonTree source, Role src,
 			AssrtCoreGActionKind kind, Role dst,
-			Map<AssrtCoreMsg, AssrtCoreGType> cases)
+			LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases)
 	{
 		super(source, dst, kind, cases);
 		this.src = src;
@@ -51,10 +52,12 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 	@Override
 	public AssrtCoreGType disamb(AssrtCore core, Map<AssrtIntVar, DataName> env)
 	{
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases = new LinkedHashMap<>();
+		this.cases.entrySet().stream()
+				.forEach(x -> cases.put(x.getKey().disamb(env),
+						x.getValue().disamb(core, env)));
 		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGChoice(
-				getSource(), this.src, getKind(), this.dst,
-				this.cases.entrySet().stream().collect(Collectors.toMap(
-						x -> x.getKey().disamb(env), x -> x.getValue().disamb(core, env))));
+				getSource(), this.src, getKind(), this.dst, cases);
 	}
 
 	@Override
@@ -62,9 +65,10 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 	{
 		Role src = subs.subsRole(this.src);
 		Role dst = subs.subsRole(this.dst);
-		Map<AssrtCoreMsg, AssrtCoreGType> cases = this.cases.entrySet().stream()
-				.collect(Collectors.toMap(Entry::getKey,
-						x -> x.getValue().substitute(core, subs)));
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases = new LinkedHashMap<>();
+		this.cases.entrySet().stream()
+				.forEach(x -> cases.put(x.getKey(),
+						x.getValue().substitute(core, subs)));
 		return ((AssrtCoreGTypeFactory) core.config.tf.global)
 				.AssrtCoreGChoice(getSource(), src, getKind(), dst, cases);
 	}
@@ -72,8 +76,9 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 	@Override
 	public AssrtCoreGType inline(AssrtCoreGTypeInliner v)
 	{
-		Map<AssrtCoreMsg, AssrtCoreGType> cases = this.cases.entrySet().stream()
-				.collect(Collectors.toMap(Entry::getKey, x -> x.getValue().inline(v)));
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases = new LinkedHashMap<>();
+		this.cases.entrySet().stream()
+				.forEach(x -> cases.put(x.getKey(), x.getValue().inline(v)));
 		return ((AssrtCoreGTypeFactory) v.core.config.tf.global)
 				.AssrtCoreGChoice(getSource(), this.src, getKind(), this.dst, cases);
 	}
@@ -81,7 +86,7 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 	@Override
 	public AssrtCoreGType pruneRecs(AssrtCore core)
 	{
-		Map<AssrtCoreMsg, AssrtCoreGType> pruned = new HashMap<>();
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> pruned = new LinkedHashMap<>();
 		for (Entry<AssrtCoreMsg, AssrtCoreGType> e : this.cases.entrySet())
 		{
 			AssrtCoreGType tmp = e.getValue().pruneRecs(core);
@@ -103,7 +108,7 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 			AssrtBFormula f) throws AssrtCoreSyntaxException
 	{
 		AssrtCoreLTypeFactory tf = (AssrtCoreLTypeFactory) core.config.tf.local;
-		Map<AssrtCoreMsg, AssrtCoreLType> projs = new HashMap<>();
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreLType> projs = new LinkedHashMap<>();
 		for (Entry<AssrtCoreMsg, AssrtCoreGType> e : this.cases.entrySet())
 		{
 			AssrtCoreMsg a = e.getKey();
@@ -205,7 +210,7 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 					+ "\n onto " + self + ": mixed action kinds: " + kinds);
 		}
 		
-		Map<AssrtCoreMsg, AssrtCoreLType> merged = new HashMap<>();
+		LinkedHashMap<AssrtCoreMsg, AssrtCoreLType> merged = new LinkedHashMap<>();
 		choices.forEach(v ->
 		{
 			if (!v.kind.equals(AssrtCoreLActionKind.RECV))

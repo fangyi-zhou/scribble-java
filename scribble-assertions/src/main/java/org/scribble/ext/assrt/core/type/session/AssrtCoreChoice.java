@@ -2,6 +2,7 @@ package org.scribble.ext.assrt.core.type.session;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -26,7 +27,7 @@ public abstract class AssrtCoreChoice<K extends ProtoKind,
 	
 	// Pre: cases.size() > 1
 	protected AssrtCoreChoice(CommonTree source, Role role,
-			AssrtCoreActionKind<K> kind, Map<AssrtCoreMsg, B> cases)
+			AssrtCoreActionKind<K> kind, LinkedHashMap<AssrtCoreMsg, B> cases)
 	{
 		super(source);
 		this.role = role;
