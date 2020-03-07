@@ -63,7 +63,7 @@ public interface AssrtAstFactory extends AstFactory
 			List<AssrtStateVarDecl> svars);
 
 	AssrtStateVarDecl AssrtStateVarDecl(Token t, AssrtIntVarNameNode svar,
-			AssrtAExprNode sexpr);
+			AssrtAExprNode sexpr, RoleNode role);
 
 	AssrtAssertDecl AssrtAssertDecl(Token t, AssrtAssertNameNode name,
 			List<AssrtSortNode> ps, AssrtSortNode ret, AssrtSmtFormula<?> expr);

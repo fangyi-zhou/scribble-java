@@ -232,11 +232,11 @@ public class AssrtAstFactoryImpl extends AstFactoryImpl
 
 	@Override
 	public AssrtStateVarDecl AssrtStateVarDecl(Token t, AssrtIntVarNameNode svar,
-			AssrtAExprNode sexpr)
+			AssrtAExprNode sexpr, RoleNode role)
 	{
 		t = newToken(t, this.tokens.getType("ASSRT_STATEVARDECL"));
 		AssrtStateVarDecl n = new AssrtStateVarDecl(t);
-		n.addScribChildren(svar, sexpr);
+		n.addScribChildren(svar, sexpr, role);
 		n.decorateDel(this.df);
 		return n;
 	}

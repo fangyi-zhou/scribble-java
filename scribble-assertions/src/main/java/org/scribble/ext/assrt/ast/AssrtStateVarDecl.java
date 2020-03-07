@@ -16,6 +16,7 @@ package org.scribble.ext.assrt.ast;
 import org.antlr.runtime.Token;
 import org.scribble.ast.ParamDecl;
 import org.scribble.ast.name.NameNode;
+import org.scribble.ast.name.simple.RoleNode;
 import org.scribble.del.DelFactory;
 import org.scribble.ext.assrt.ast.name.simple.AssrtIntVarNameNode;
 import org.scribble.ext.assrt.core.type.kind.AssrtIntVarKind;
@@ -28,8 +29,10 @@ import org.scribble.visit.AstVisitor;
 // RoleKind or (NonRole)ParamKind
 public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 {
-	//public static final int NAMENODE_CHILD_INDEX = 0;
+	//public static final int NAMENODE_CHILD_INDEX = 0;  // Cf. NameDeclNode
 	public static final int ASSRT_STATEVAREXPR_CHILD_INDEX = 1;
+	public static final int ASSRT_ROLE_CHILD_INDEX = 2;  // null means "all roles" ("global" statevar) -- back compat
+	// Cf. AssrtGMsgTransfer.DST_CHILD_INDEX, RoleNode
 
 	// ScribTreeAdaptor#create constructor
 	public AssrtStateVarDecl(Token t)
@@ -46,12 +49,18 @@ public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 	@Override
 	public AssrtIntVarNameNode getNameNodeChild()
 	{
-		return (AssrtIntVarNameNode) getRawNameNodeChild();
+		return (AssrtIntVarNameNode) getRawNameNodeChild();  // NameDeclNode.NAMENODE_CHILD_INDEX == 0
 	}
 	
 	public AssrtAExprNode getStateVarExprChild()
 	{
 		return (AssrtAExprNode) getChild(ASSRT_STATEVAREXPR_CHILD_INDEX);
+	}
+
+	// null means "all roles" ("global" statevar) -- back compat
+	public RoleNode getRoleNodeChild()  // Cf. AssrtGMsgTransfer.getDestinationChild
+	{
+		return (RoleNode) getChild(ASSRT_ROLE_CHILD_INDEX);
 	}
 
 	@Override
@@ -61,11 +70,13 @@ public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 	}
 
 	// "add", not "set"
-	public void addScribChildren(NameNode<AssrtIntVarKind> name, AssrtAExprNode sexpr)
+	public void addScribChildren(NameNode<AssrtIntVarKind> name,
+			AssrtAExprNode sexpr, RoleNode role)
 	{
 		// Cf. above getters and Scribble.g children order
 		super.addScribChildren(name);
 		addChild(sexpr);
+		addChild(role);
 	}
 	
 	@Override
@@ -87,11 +98,11 @@ public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 	}
 
 	public ParamDecl<AssrtIntVarKind> reconstruct(NameNode<AssrtIntVarKind> name,
-			AssrtAExprNode sexpr)
+			AssrtAExprNode sexpr, RoleNode role)
 			// Always a "simple" name (e.g., like Role), but Type/Sig names are not SimpleNames
 	{
 		AssrtStateVarDecl dup = dupNode();
-		dup.addScribChildren(name, sexpr);
+		dup.addScribChildren(name, sexpr, role);
 		dup.setDel(del());  // No copy
 		return dup;
 	}
@@ -103,7 +114,12 @@ public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 		NameNode<AssrtIntVarKind> svar = 
 				visitChildWithClassEqualityCheck(this, getNameNodeChild(), v);
 		AssrtAExprNode sexpr = (AssrtAExprNode) visitChild(getStateVarExprChild(), v);
-		return reconstruct(svar, sexpr);
+		RoleNode role = getRoleNodeChild();
+		if (role != null)
+		{
+			role = (RoleNode) visitChild(role, v);
+		}
+		return reconstruct(svar, sexpr, role);
 	}
 
 	@Override
@@ -121,11 +137,40 @@ public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 	@Override
 	public String toString()
 	{
-		return getDeclName().toString() + " := " + getStateVarExprChild();
+		RoleNode role = getRoleNodeChild();
+		return getDeclName().toString()
+				+ (role == null ? " := " : " :" + role + " = ")
+				+ getStateVarExprChild();
 	}
 }
 
-/*public abstract class AssrtStateVarDecl extends NameDeclNode<AssrtIntVarKind>
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public abstract class AssrtStateVarDecl extends NameDeclNode<AssrtIntVarKind>
 {
 	//public static final int NAMENODE_CHILD_INDEX = 0;
 	public static final int NAMENODE_CHILD_INDEX = 0;
