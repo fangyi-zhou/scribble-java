@@ -170,7 +170,83 @@ type <dotnet> "System.String" from "..." as String;
 // - fix syntax -- TODO: deprecate AssrtStateVarAnnotNode for an intermediary CommonTree
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion not valid now under constant but could be later -- now: restored
 
+global protocol Proto1(role A, role B, role C) {
+  1(x:int) from A to B;    @'x>0'
+  do Proto1Aux(A, B, C);   @'<x>'
+}
 
+aux global protocol Proto1Aux(role A, role B, role C) @'<x1:=1> x1>0' {
+  2() from C to B;  // FIXME: x1 globally inlined to x is incorrect for C (C doesn't know x)
+  3() from C to A;
+}
+
+/*
+global protocol Proto1(role A, role B)
+{
+	1() from A to B;
+	do Proto1Aux(A, B); @'<1>'
+}
+
+aux global protocol Proto1Aux(role A, role B) @"<y:=1> y>0"
+{
+	choice at B
+	{
+		2() from B to A; @'y>1'
+	  do Proto1Aux(A, B); @'<y-1>'
+	}
+	or
+	{
+	  3() from B to A; @'y<=1'
+	}
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B, role C) {
+  num(x:int) from A to B;
+  limit(z:int) from A to B;
+  do Proto1Aux(A, B, C); @'<x, z>'
+}
+
+aux global protocol Proto1Aux(role A, role B, role C) @'<x1:=0, z1:=0>' {
+  guess(y:int) from C to B;
+  choice at B {
+    toohigh() from B to C;     @'y>x1'
+    conthigh() from B to A;
+    do Proto1Aux(A, B, C);  @'<x1, z1-1>'
+  } or {
+    win() from B to C;         @'y=x1 && z1>0'
+    lose() from B to A;
+  } or {
+    lose() from B to C;        @'z1<=0'
+    win() from B to A;
+  } or {
+    toolow() from B to C;      @'y<x1'
+    contlow() from B to A;
+    do Proto1Aux(A, B, C);  @'<x1,z1-1>'
+  }
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B) @"<y:=0, x:=50>"
+{
+	choice at A
+	{
+		1() from A to B;
+		do Proto1(A, B); @"<y, x+1>"
+	}
+	or
+	{
+		i2() from A to B;
+		do Proto1(A, B); @"<y, x-1>"
+	}
+}
+//*/
+
+/*
 global protocol Proto1(role A, role B, role C)
 {
 	1() from A to B;
@@ -190,7 +266,7 @@ aux global protocol Proto1Aux(role B, role C)
   	4() from B to C;
   }
 }
-
+//*/
 
 
 /*
