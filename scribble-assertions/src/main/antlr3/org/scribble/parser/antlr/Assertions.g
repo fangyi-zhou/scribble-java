@@ -78,6 +78,7 @@ tokens
 	import org.antlr.runtime.tree.CommonTree;
 
   import org.scribble.ast.ScribNodeBase;
+  import org.scribble.ast.name.simple.RoleNode;
 
   import org.scribble.ext.assrt.ast.AssrtAExprNode;
   import org.scribble.ext.assrt.ast.AssrtBExprNode;
@@ -377,9 +378,14 @@ assrt_statevardecl:
 	assrt_intvarname ':=' arith_expr  // arith_expr parsed to AssrtAExprNode by parseStateVarHeader
 ->
 	^(ASSRT_STATEVARDECL assrt_intvarname arith_expr)
+|
+	assrt_intvarname ':' rolename '=' arith_expr  // arith_expr parsed to AssrtAExprNode by parseStateVarHeader
+->
+	^(ASSRT_STATEVARDECL assrt_intvarname arith_expr rolename)
 ;
 
 // Duplicated from AssrtScribble.g
+rolename: t=IDENTIFIER -> IDENTIFIER<RoleNode>[$t] ;
 //assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 assrt_intvarname: t=IDENTIFIER -> IDENTIFIER<AssrtIntVarNameNode>[$t] ;  // N.B. Specifically int
 

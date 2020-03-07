@@ -31,10 +31,15 @@ import org.scribble.ext.assrt.core.visit.global.AssrtCoreGTypeInliner;
 public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 		implements AssrtCoreGType
 {
+	// Pre: same keys as super.statevars
+	public final LinkedHashMap<AssrtIntVar, Role> located;  // maps to null for "global" (back compat)
+
 	protected AssrtCoreGRec(CommonTree source, RecVar rv, AssrtCoreGType body,
-			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars, AssrtBFormula ass)
+			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars, AssrtBFormula ass,
+			LinkedHashMap<AssrtIntVar, Role> located)
 	{
 		super(source, rv, body, svars, ass);
+		this.located = located;
 	}
 
 	@Override
@@ -48,7 +53,7 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 				(AssrtAFormula) x.getValue().disamb(env1)));  // Unnecessary, disallow mutual var refs?
 		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGRec(
 				getSource(), this.recvar, this.body.disamb(core, env1), svars,
-				(AssrtBFormula) this.assertion.disamb(env1));
+				(AssrtBFormula) this.assertion.disamb(env1), this.located);
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 	{
 		return ((AssrtCoreGTypeFactory) core.config.tf.global).AssrtCoreGRec(
 				getSource(), this.recvar, this.body.substitute(core, subs), this.statevars,
-				this.assertion);
+				this.assertion, this.located);
 	}
 
 	@Override
@@ -115,7 +120,8 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 		{
 			return false;
 		}
-		return super.equals(obj);  // Does canEquals
+		AssrtCoreGRec them = (AssrtCoreGRec) obj;
+		return super.equals(obj) && this.located.equals(them.located);  // Does canEquals
 	}
 	
 	@Override
@@ -129,6 +135,7 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 	{
 		int hash = 2333;
 		hash = 31 * hash + super.hashCode();
+		hash = 31 * hash + this.located.hashCode();
 		return hash;
 	}
 }

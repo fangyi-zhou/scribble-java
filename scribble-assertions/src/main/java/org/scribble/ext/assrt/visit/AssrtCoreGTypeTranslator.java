@@ -129,10 +129,16 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 
 		AssrtStateVarDeclList tmp1 = hdr.getStateVarDeclListChild();
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+		LinkedHashMap<AssrtIntVar, Role> located = new LinkedHashMap<>();
 		if (tmp1 != null)
 		{
-			tmp1.getDeclChildren().forEach(
-					x -> svars.put(x.getDeclName(), x.getStateVarExprChild().expr));
+			tmp1.getDeclChildren().forEach(x ->
+				{
+					AssrtIntVar v = x.getDeclName();
+					svars.put(v, x.getStateVarExprChild().expr);
+					RoleNode r = x.getRoleNodeChild();  // null if no explicit role
+					located.put(v, (r == null ? null : r.toName()));
+				});
 		}
 		AssrtBExprNode tmp2 = hdr.getAnnotAssertChild();
 		AssrtBFormula ass = (tmp2 == null) ? AssrtTrueFormula.TRUE : tmp2.expr;
@@ -144,7 +150,8 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 		body = body.disamb((AssrtCore) this.job.getCore(), env);
 		ass = (AssrtBFormula) ass.disamb(env);*/
 		
-		return new AssrtCoreGProtocol(n, mods, fullname, rs, ps, body, svars, ass);
+		return new AssrtCoreGProtocol(n, mods, fullname, rs, ps, body, svars,
+				ass, located);
 	}
 
 	// List<GSessionNode> because subList is useful for parsing the continuation

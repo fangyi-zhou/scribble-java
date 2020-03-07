@@ -106,7 +106,7 @@ public class AssrtCoreContext extends CoreContext
 			AssrtBFormula ass = (AssrtBFormula) cast.assertion.disamb(env);  // FIXME: throw ScribblException, for WF errors
 			inlined = new AssrtCoreGProtocol(inlined.getSource(), inlined.mods,
 					inlined.fullname, inlined.roles, inlined.params,
-					body, cast.statevars, ass);
+					body, cast.statevars, ass, cast.located);
 
 			addInlined(fullname, inlined);
 		}

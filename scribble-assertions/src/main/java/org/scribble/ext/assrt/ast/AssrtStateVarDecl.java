@@ -63,6 +63,12 @@ public class AssrtStateVarDecl extends ParamDecl<AssrtIntVarKind>
 		return (RoleNode) getChild(ASSRT_ROLE_CHILD_INDEX);
 	}
 
+	public boolean hasRoleNodeChild()
+	{
+		//return getChild(ASSRT_ROLE_CHILD_INDEX) != null;
+		return getChildCount() > 2;
+	}
+
 	@Override
 	public void addScribChildren(NameNode<AssrtIntVarKind> name)
 	{

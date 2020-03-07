@@ -62,16 +62,20 @@ public class AssrtCoreGProtocol extends GProtocol
 	public final LinkedHashMap<AssrtIntVar, AssrtAFormula> statevars;
 	public final AssrtBFormula assertion;  // non-null (True)
 	
+	// Pre: same keys as statevars
+	public final LinkedHashMap<AssrtIntVar, Role> located;  // maps to null for "global" (back compat)
+
 	public AssrtCoreGProtocol(CommonTree source, List<ProtoMod> mods,
 			GProtoName fullname, List<Role> rs,
 			List<MemberName<? extends NonRoleParamKind>> ps, AssrtCoreGType type,
 			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars,
-			AssrtBFormula assrt)
+			AssrtBFormula assrt, LinkedHashMap<AssrtIntVar, Role> located)
 	{
 		super(source, mods, fullname, rs, ps, null);  // N.B. null Seq as super.def
 		this.type = type;
 		this.statevars = new LinkedHashMap<>(svars);  // TODO: unmod
 		this.assertion = assrt;
+		this.located = located;
 	}
 
 	// Get all var->sort from proto statically -- assumes unique var names
@@ -101,10 +105,11 @@ public class AssrtCoreGProtocol extends GProtocol
 	public AssrtCoreGProtocol reconstruct(CommonTree source, List<ProtoMod> mods,
 			GProtoName fullname, List<Role> rs,
 			List<MemberName<? extends NonRoleParamKind>> ps, AssrtCoreGType type,
-			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars, AssrtBFormula ass)
+			LinkedHashMap<AssrtIntVar, AssrtAFormula> svars, AssrtBFormula ass,
+			LinkedHashMap<AssrtIntVar, Role> located)
 	{
 		return new AssrtCoreGProtocol(source, mods, fullname, rs, ps, type, svars,
-				ass);
+				ass, located);
 	}
 	
 	// TODO: N.B. currently, dummy is discarded -- refactor
@@ -123,7 +128,7 @@ public class AssrtCoreGProtocol extends GProtocol
 		RecVar rv = v.getInlinedRecVar(sig);
 		AssrtCoreGTypeFactory tf = (AssrtCoreGTypeFactory) v.core.config.tf.global;
 		AssrtCoreGRec rec = tf.AssrtCoreGRec(null, rv, inlined,
-				new LinkedHashMap<>(), AssrtTrueFormula.TRUE);
+				new LinkedHashMap<>(), AssrtTrueFormula.TRUE, new LinkedHashMap<>());  // TODO FIXME: located
 		AssrtCoreGType pruned = rec.pruneRecs((AssrtCore) v.core);
 
 		// TODO
@@ -131,7 +136,8 @@ public class AssrtCoreGProtocol extends GProtocol
 		List<Role> rs = this.roles.stream().filter(x -> used.contains(x))  // Prune role decls -- CHECKME: what is an example?  was this from before unused role checking?
 				.collect(Collectors.toList());*/
 		return new AssrtCoreGProtocol(getSource(), this.mods, this.fullname,
-				this.roles, this.params, pruned, this.statevars, this.assertion);
+				this.roles, this.params, pruned, this.statevars, this.assertion,
+				this.located);
 	}
 	
 	@Override
@@ -187,10 +193,10 @@ public class AssrtCoreGProtocol extends GProtocol
 				+ rolesToString()
 				+ " @<"
 				+ this.statevars.entrySet().stream()
-						//.map(x -> x.getKey() + " := \"" + x.getValue() + "\"")
-						.map(x -> x.getKey() + " := " + x.getValue())
+						.map(x -> x.getKey() + " :"
+								+ (this.located.get(x) == null ? "" : this.located.get(x) + " ")
+								+ "= " + x.getValue())
 						.collect(Collectors.joining(", "))
-				//+ "> \"" + this.assertion + "\""
 				+ "> " + this.assertion
 				+ " {\n" + this.type + "\n}";
 	}
@@ -207,6 +213,7 @@ public class AssrtCoreGProtocol extends GProtocol
 		hash = 31 * hash + this.type.hashCode();
 		hash = 31 * hash + this.statevars.hashCode();
 		hash = 31 * hash + this.assertion.hashCode();
+		hash = 31 * hash + this.located.hashCode();
 		return hash;
 	}
 
@@ -227,7 +234,8 @@ public class AssrtCoreGProtocol extends GProtocol
 				&& this.fullname.equals(them.fullname) && this.roles.equals(them.roles)
 				&& this.params.equals(them.params) && this.type.equals(them.type)
 				&& this.statevars.equals(them.statevars)
-				&& this.assertion.equals(them.assertion);
+				&& this.assertion.equals(them.assertion)
+				&& this.located.equals(them.located);
 	}
 
 	@Override

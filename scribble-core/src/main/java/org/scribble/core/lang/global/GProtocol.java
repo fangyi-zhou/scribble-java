@@ -64,6 +64,7 @@ public class GProtocol extends Protocol<Global, GProtoName, GSeq>
 		return new GProtocol(source, mods, fullname, rs, ps, def);
 	}
 	
+	// Used by CoreContext.getInlined
 	// Cf. (e.g.) checkRoleEnabling, that takes Core
 	// N.B. Do directly does visitSeq on target def -- here is only top-level entry
 	@Override
