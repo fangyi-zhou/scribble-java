@@ -85,10 +85,20 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 			AssrtBFormula f) throws AssrtCoreSyntaxException
 	{
 		AssrtCoreLType proj = this.body.projectInlined(core, self, f);
+
+		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+		this.statevars.entrySet().stream()  // ordered
+				.filter(x ->
+					{
+						Role r = this.located.get(x.getKey());
+						return r == null || r.equals(self);
+					})
+				.forEach(x -> svars.put(x.getKey(), x.getValue()));
+
 		return (proj instanceof AssrtCoreLRecVar) 
 				? AssrtCoreLEnd.END
 				: ((AssrtCoreLTypeFactory) core.config.tf.local).AssrtCoreLRec(null,
-						this.recvar, this.statevars, proj, this.assertion);
+						this.recvar, svars, proj, this.assertion);
 	}
 
 	@Override

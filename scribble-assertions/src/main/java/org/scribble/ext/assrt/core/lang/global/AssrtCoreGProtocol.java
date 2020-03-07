@@ -128,8 +128,8 @@ public class AssrtCoreGProtocol extends GProtocol
 		RecVar rv = v.getInlinedRecVar(sig);
 		AssrtCoreGTypeFactory tf = (AssrtCoreGTypeFactory) v.core.config.tf.global;
 		AssrtCoreGRec rec = tf.AssrtCoreGRec(null, rv, inlined,
-				new LinkedHashMap<>(), AssrtTrueFormula.TRUE, new LinkedHashMap<>());  // TODO FIXME: located
-		AssrtCoreGType pruned = rec.pruneRecs((AssrtCore) v.core);
+				new LinkedHashMap<>(), AssrtTrueFormula.TRUE, new LinkedHashMap<>());
+		AssrtCoreGType pruned = rec.pruneRecs((AssrtCore) v.core);  // Empty statevars/located here; recorded by parent proto
 
 		// TODO
 		/*Set<Role> used = rec.gather(new RoleGatherer<Global, GSeq>()::visit) .collect(Collectors.toSet());
@@ -173,8 +173,18 @@ public class AssrtCoreGProtocol extends GProtocol
 				AssrtTrueFormula.TRUE);
 		LProtoName fullname = InlinedProjector
 				.getFullProjectionName(this.fullname, self);
+
+		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
+		this.statevars.entrySet().stream()  // ordered
+				.filter(x ->
+					{
+						Role r = this.located.get(x.getKey());
+						return r == null || r.equals(self);
+					})
+				.forEach(x -> svars.put(x.getKey(), x.getValue()));
+
 		return new AssrtCoreLProjection(this.mods, fullname, this.roles, self,
-				this.params, this.fullname, proj, this.statevars, this.assertion);
+				this.params, this.fullname, proj, svars, this.assertion);
 	}
 
 	// N.B. no "fixing" passes done here -- need breadth-first passes to be sequentialised for subproto visiting
