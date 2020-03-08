@@ -359,8 +359,11 @@ aux global protocol Proto1Aux(role A, role B, role C)
 //*/
 
 
-
-
+/*  // TODO z3 bitvec 
+global protocol Proto1(role A, role B) @'<x:=0>' {
+	1(y:int) from A to B;  @'...'
+}
+*/
 
 
 
@@ -600,7 +603,8 @@ global protocol OAuth (role C, role S, role A) {
 // authed() from A to S;
 //}
 
-aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0 && try<=3" {
+aux global protocol Auth (role C, role S, role A) //@"<try:=0> try>=0 && try<=3" {
+                                                   @"<try:A=0> try>=0 && try<=3" {
  password(pwd: int) from C to A;
  choice at A {
    authed() from A to S;
@@ -608,7 +612,7 @@ aux global protocol Auth (role C, role S, role A) @"<try:=0> try>=0 && try<=3" {
  } or {
    again() from A to S; @"try<3"
    //again() from S to C;
-   again() from S to C; @"try<3"
+   again() from S to C; //@"try<3"  // Cf. "global" statevars
    do Auth(C, S, A); @"<try+1>"
  } or {
    failure() from A to S; @"try=3"
