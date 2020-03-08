@@ -271,7 +271,7 @@ aux global protocol Proto1Aux(role A, role B) @"<y:=1>"  // FIXME: batch is fail
 //*/
 
 
-//*
+/*
 global protocol Proto1(role A, role B, role C) {
   start(n:int) from A to B;  @'0<=n && n<100'
   limit(t:int) from A to B;  @'t>0'
@@ -280,7 +280,6 @@ global protocol Proto1(role A, role B, role C) {
 
 aux global protocol Proto1Aux(role A, role B, role C) @'<n1:B=0, t1:B=1> t1>0' {
   guess(x:int) from C to B;
-  guess() from C to A;
   choice at B {
     higher() from B to C;   @'n1>x && t1>1'
     higher() from B to A;
@@ -289,7 +288,7 @@ aux global protocol Proto1Aux(role A, role B, role C) @'<n1:B=0, t1:B=1> t1>0' {
     win() from B to C;      @'n1=x'
     lose() from B to A;
   } or {
-    lose() from B to C;     @'!(n1=x) && t1=1'
+    lose() from B to C;     @'(!(n1=x)) && t1=1'  // FIXME: ! precedence
     win() from B to A;
   } or {
     lower() from B to C;    @'n1<x && t1>1'
@@ -326,7 +325,37 @@ aux global protocol Proto1Aux(role A, role B, role C) @'<nA:A=0, n1:B=0, t1:B=1>
     do Proto1Aux(A, B, C);  @'<nA, n1, t1-1>'
   }
 }
+//*/
 
+
+//*
+global protocol Proto1(role A, role B, role C) {
+  start(n:int) from A to B;  @'0<=n && n<100'
+  limit(t:int) from A to B;  @'t>0'
+  guess(x:int) from C to B;
+  do Proto1Aux(A, B, C);     @'<n, t, x, x>'
+}
+
+aux global protocol Proto1Aux(role A, role B, role C) @'<n1:B=0, t1:B=0, xB:B=0, xC:C=0> t1>=0' {
+  choice at B {
+    higher() from B to C;   @'n1>xB && t1>0'
+    higher() from B to A;
+    guess(x2:int) from C to B; @'x2>xC'
+    do Proto1Aux(A, B, C);  @'<n1, t1-1, x2, x2>'
+  } or {
+    win() from B to C;      @'n1=xB'
+    lose() from B to A;
+  } or {
+    lose() from B to C;     @'(!(n1=xB)) && t1=0'  // FIXME: ! precedence
+    win() from B to A;
+  } or {
+    lower() from B to C;    @'n1<xB && t1>0'
+    lower() from B to A;
+    guess(x3:int) from C to B; @'x3<xC'
+    do Proto1Aux(A, B, C);  @'<n1, t1-1, x3, x3>'
+  }
+}
+//*/
 
 
 
