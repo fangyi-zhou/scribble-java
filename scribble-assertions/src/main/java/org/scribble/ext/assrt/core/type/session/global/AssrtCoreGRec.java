@@ -17,6 +17,7 @@ import org.scribble.core.type.name.Substitutions;
 import org.scribble.ext.assrt.core.job.AssrtCore;
 import org.scribble.ext.assrt.core.type.formula.AssrtAFormula;
 import org.scribble.ext.assrt.core.type.formula.AssrtBFormula;
+import org.scribble.ext.assrt.core.type.formula.AssrtTrueFormula;
 import org.scribble.ext.assrt.core.type.name.AssrtAnnotDataName;
 import org.scribble.ext.assrt.core.type.name.AssrtIntVar;
 import org.scribble.ext.assrt.core.type.session.AssrtCoreRec;
@@ -82,12 +83,12 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLType projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			AssrtBFormula f, Map<Role, Set<AssrtIntVar>> known,
+			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 			throws AssrtCoreSyntaxException
 	{
 		Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> tmp = new HashMap<>(located);
 		tmp.put(this.recvar, this.located);
-		AssrtCoreLType proj = this.body.projectInlined(core, self, f, tmp);
 
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
 		this.statevars.entrySet().stream()  // ordered
@@ -98,10 +99,33 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 					})
 				.forEach(x -> svars.put(x.getKey(), x.getValue()));
 
+		Map<Role, Set<AssrtIntVar>> tmp2 = new HashMap<>(known);
+		Set<AssrtIntVar> tmp3 = tmp2.get(self);
+		tmp2.put(self, tmp3);
+		tmp3.addAll(svars.keySet());  // Agnostic to shadowing -- cf. AssrtCoreGProtocol and inserted top-level rec
+		AssrtCoreLType proj = this.body.projectInlined(core, self, f, tmp2, tmp);
+
+		Set<AssrtIntVar> assVars = this.assertion.getIntVars();
+		Set<AssrtIntVar> k = known.get(self);
+		AssrtBFormula ass = this.assertion;
+		if (!k.containsAll(assVars))
+		{
+			assVars.retainAll(k);
+			if (!assVars.isEmpty())
+			{
+				throw new AssrtCoreSyntaxException(
+						"Cannot project assertion onto " + self
+								+ ", some (but not all) variables unknown: "
+								+ assVars + "\n\t" + this);
+				// HACK FIXME: cf. model K (do in model checking?)
+			}
+			ass = AssrtTrueFormula.TRUE;
+		}
+
 		return (proj instanceof AssrtCoreLRecVar) 
 				? AssrtCoreLEnd.END
 				: ((AssrtCoreLTypeFactory) core.config.tf.local).AssrtCoreLRec(null,
-						this.recvar, svars, proj, this.assertion);
+						this.recvar, svars, proj, ass);
 	}
 
 	@Override

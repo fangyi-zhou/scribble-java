@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -64,7 +65,8 @@ public class AssrtCoreGRecVar extends AssrtCoreRecVar<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLRecVar projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			AssrtBFormula f, Map<Role, Set<AssrtIntVar>> known,
+			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 	{
 		Iterator<Entry<AssrtIntVar, Role>> it = located.get(this.recvar).entrySet()
 				.iterator();

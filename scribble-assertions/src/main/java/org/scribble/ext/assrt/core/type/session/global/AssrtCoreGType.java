@@ -3,6 +3,7 @@ package org.scribble.ext.assrt.core.type.session.global;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.scribble.core.type.kind.Global;
 import org.scribble.core.type.name.DataName;
@@ -33,6 +34,7 @@ public interface AssrtCoreGType extends AssrtCoreSType<Global, AssrtCoreGType>
 	AssrtCoreGType pruneRecs(AssrtCore core);
 
 	AssrtCoreLType projectInlined(AssrtCore core, Role self, AssrtBFormula f,
+			Map<Role, Set<AssrtIntVar>> known,
 			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 			throws AssrtCoreSyntaxException;  // N.B. checking "mergability"
 	

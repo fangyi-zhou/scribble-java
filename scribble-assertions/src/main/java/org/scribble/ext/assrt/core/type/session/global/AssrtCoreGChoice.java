@@ -1,6 +1,7 @@
 package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +106,8 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLType projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			AssrtBFormula f, Map<Role, Set<AssrtIntVar>> known,
+			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 			throws AssrtCoreSyntaxException
 	{
 		AssrtCoreLTypeFactory tf = (AssrtCoreLTypeFactory) core.config.tf.local;
@@ -135,8 +137,16 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 				a = ((AssrtCoreSTypeFactory) core.config.tf).AssrtCoreAction(a.op,
 						a.pay, fproj);
 			}*/
+			Map<Role, Set<AssrtIntVar>> tmp = new HashMap<>(known);
+			if (this.src.equals(self) || this.dst.equals(self))
+			{
+				Set<AssrtIntVar> tmp2 = new HashSet<>(tmp.get(self));
+				tmp.put(self, tmp2);
+				a.pay.stream().forEach(x -> tmp2.add(x.var));
+			}
 
-			projs.put(a, e.getValue().projectInlined(core, self, fproj, located));
+			projs.put(a,
+					e.getValue().projectInlined(core, self, fproj, tmp, located));
 					// N.B. local actions directly preserved from globals -- so core-receive also has assertion (cf. AssrtGMessageTransfer.project, currently no AssrtLReceive)
 					// FIXME: receive assertion projection -- should not be the same as send?
 		}

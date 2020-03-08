@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -119,7 +120,8 @@ public class AssrtCoreGDo extends AssrtCoreDo<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLType projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			AssrtBFormula f, Map<Role, Set<AssrtIntVar>> known,
+			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 			throws AssrtCoreSyntaxException
 	{
 		throw new RuntimeException("[TODO] :\n\t" + this);

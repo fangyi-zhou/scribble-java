@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -172,8 +173,18 @@ public class AssrtCoreGProtocol extends GProtocol
 	@Override
 	public AssrtCoreLProjection projectInlined(Core core, Role self)
 	{
+		Map<Role, Set<AssrtIntVar>> known = new HashMap<>();
+		this.roles.forEach(x -> known.put(x, this.located.entrySet().stream()
+				.filter(y ->
+					{
+						Role r = y.getValue();
+						return r == null || r.equals(x);
+					})
+				.map(y -> y.getKey())
+				.collect(Collectors.toSet())));  // FIXME? will be overwritten by inserted top-level rec anway
+
 		AssrtCoreLType proj = this.type.projectInlined((AssrtCore) core, self,
-				AssrtTrueFormula.TRUE, Collections.emptyMap());
+				AssrtTrueFormula.TRUE, known, Collections.emptyMap());
 		LProtoName fullname = InlinedProjector
 				.getFullProjectionName(this.fullname, self);
 

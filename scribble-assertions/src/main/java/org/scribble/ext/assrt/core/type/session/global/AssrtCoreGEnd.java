@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.scribble.core.type.kind.Global;
 import org.scribble.core.type.name.DataName;
@@ -56,7 +57,8 @@ public class AssrtCoreGEnd extends AssrtCoreEnd<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLEnd projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			AssrtBFormula f, Map<Role, Set<AssrtIntVar>> known,
+			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 	{
 		return ((AssrtCoreLTypeFactory) core.config.tf.local).AssrtCoreLEnd();
 	}

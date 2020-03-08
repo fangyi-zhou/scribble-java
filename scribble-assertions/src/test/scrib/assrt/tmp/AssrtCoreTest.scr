@@ -170,22 +170,58 @@ type <dotnet> "System.String" from "..." as String;
 // - fix syntax -- TODO: deprecate AssrtStateVarAnnotNode for an intermediary CommonTree
 // - deprecate "constant propagation" -- prevents loops counting or any example where assertion not valid now under constant but could be later -- now: restored
 
+
+
+
+/*
 global protocol Proto1(role A, role B) @'<xA:A=1, xB:B=1>' {
 	1() from A to B;
 	do Proto1(A, B); @'<xA, xB>'
 }
+//*/
+
 
 /*
+global protocol Proto1(role A, role B) @'<x:A=1, x:B=1>' {  
+// Maybe don't need or shouldn't have "sync'd" state vars, i.e., keep all distributed
+// Rely on explicit payload vars -- comm'd will be know anyway, and can manually assign to statevar locally
+// And since assertion depends on statevars, means statevar annots are "localised" one role per rec
+// Basically, can nest recs anyway for multiple roles
+	1() from A to B;
+	do Proto1(A, B); @'<xA, xB>'
+}
+//*/
+
+
+/*
+global protocol Proto1(role A, role B) @'<x:=1, y:=2> x>1 || y>1'  
+// Cannot do "fine-grained projection" of assertions onto located statevars
+// TODO add bad test
+{
+	choice at A
+	{
+		1() from A to B; @'x>1'
+	}
+	or 
+	{
+		2() from A to B;
+	}	
+}
+//*/
+
+
+//*
 global protocol Proto1(role A, role B, role C) {
-  1(x:int) from A to B;    @'x>0'
-  do Proto1Aux(A, B, C);   @'<x>'
+  1(x:int) from A to B;    @'x>5'
+  do Proto1Aux(A, B, C);   @'<x>'  // FIXME TODO: check x is known by B (target located statevar)
 }
 
-aux global protocol Proto1Aux(role A, role B, role C) @'<x1:=1> x1>0' {
+aux global protocol Proto1Aux(role A, role B, role C) @'<x1:B=1> x1>0' {
   2() from C to B;  // TODO: add bad test -- x1 globally inlined to x is incorrect for C (C doesn't know x)
-  3() from C to A;
+  3() from C to A;  //@'x>0 && x<2'  // Cannot have mixed init of statevar, e.g., from message for located, from default for nonlocated, inconsistent -- quantify? (phantom?)  // TODO add bad test
 }
-*/
+//*/
+
 
 /*
 global protocol Proto1(role A, role B)
