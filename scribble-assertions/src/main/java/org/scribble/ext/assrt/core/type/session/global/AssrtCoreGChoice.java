@@ -105,7 +105,8 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLType projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f) throws AssrtCoreSyntaxException
+			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			throws AssrtCoreSyntaxException
 	{
 		AssrtCoreLTypeFactory tf = (AssrtCoreLTypeFactory) core.config.tf.local;
 		LinkedHashMap<AssrtCoreMsg, AssrtCoreLType> projs = new LinkedHashMap<>();
@@ -135,7 +136,7 @@ public class AssrtCoreGChoice extends AssrtCoreChoice<Global, AssrtCoreGType>
 						a.pay, fproj);
 			}*/
 
-			projs.put(a, e.getValue().projectInlined(core, self, fproj));
+			projs.put(a, e.getValue().projectInlined(core, self, fproj, located));
 					// N.B. local actions directly preserved from globals -- so core-receive also has assertion (cf. AssrtGMessageTransfer.project, currently no AssrtLReceive)
 					// FIXME: receive assertion projection -- should not be the same as send?
 		}

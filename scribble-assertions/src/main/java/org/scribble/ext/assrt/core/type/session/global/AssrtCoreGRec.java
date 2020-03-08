@@ -82,9 +82,12 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLType projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f) throws AssrtCoreSyntaxException
+			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			throws AssrtCoreSyntaxException
 	{
-		AssrtCoreLType proj = this.body.projectInlined(core, self, f);
+		Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> tmp = new HashMap<>(located);
+		tmp.put(this.recvar, this.located);
+		AssrtCoreLType proj = this.body.projectInlined(core, self, f, tmp);
 
 		LinkedHashMap<AssrtIntVar, AssrtAFormula> svars = new LinkedHashMap<>();
 		this.statevars.entrySet().stream()  // ordered
@@ -117,6 +120,20 @@ public class AssrtCoreGRec extends AssrtCoreRec<Global, AssrtCoreGType>
 
 		res.addAll(this.body.collectAnnotDataVarDecls(env1));
 		return res;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "mu " + this.recvar + "<"
+				+ this.statevars.entrySet().stream()
+						.map(x -> x.getKey()
+								+ (this.located.get(x.getKey()) == null  // Cf. AssrtCoreGProtocol
+										? " :"
+										: ":" + this.located.get(x.getKey()) + " ")
+								+ "= " + x.getValue())
+						.collect(Collectors.joining(", "))
+				+ ">" + this.assertion + "." + this.body;
 	}
 
 	@Override

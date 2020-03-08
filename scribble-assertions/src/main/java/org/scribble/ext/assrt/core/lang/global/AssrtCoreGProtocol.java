@@ -13,6 +13,7 @@
  */
 package org.scribble.ext.assrt.core.lang.global;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -128,7 +129,8 @@ public class AssrtCoreGProtocol extends GProtocol
 		RecVar rv = v.getInlinedRecVar(sig);
 		AssrtCoreGTypeFactory tf = (AssrtCoreGTypeFactory) v.core.config.tf.global;
 		AssrtCoreGRec rec = tf.AssrtCoreGRec(null, rv, inlined,
-				new LinkedHashMap<>(), AssrtTrueFormula.TRUE, new LinkedHashMap<>());
+				//new LinkedHashMap<>(), AssrtTrueFormula.TRUE, new LinkedHashMap<>());
+				this.statevars, this.assertion, this.located);
 		AssrtCoreGType pruned = rec.pruneRecs((AssrtCore) v.core);  // Empty statevars/located here; recorded by parent proto
 
 		// TODO
@@ -136,8 +138,9 @@ public class AssrtCoreGProtocol extends GProtocol
 		List<Role> rs = this.roles.stream().filter(x -> used.contains(x))  // Prune role decls -- CHECKME: what is an example?  was this from before unused role checking?
 				.collect(Collectors.toList());*/
 		return new AssrtCoreGProtocol(getSource(), this.mods, this.fullname,
-				this.roles, this.params, pruned, this.statevars, this.assertion,
-				this.located);
+				this.roles, this.params, pruned,
+		//new LinkedHashMap<>(), AssrtTrueFormula.TRUE, new LinkedHashMap<>());
+				this.statevars, this.assertion, this.located);  // FIXME: ^refactor statevars/located properly with above rec, currently duplicated
 	}
 	
 	@Override
@@ -170,7 +173,7 @@ public class AssrtCoreGProtocol extends GProtocol
 	public AssrtCoreLProjection projectInlined(Core core, Role self)
 	{
 		AssrtCoreLType proj = this.type.projectInlined((AssrtCore) core, self,
-				AssrtTrueFormula.TRUE);
+				AssrtTrueFormula.TRUE, Collections.emptyMap());
 		LProtoName fullname = InlinedProjector
 				.getFullProjectionName(this.fullname, self);
 
@@ -203,8 +206,10 @@ public class AssrtCoreGProtocol extends GProtocol
 				+ rolesToString()
 				+ " @<"
 				+ this.statevars.entrySet().stream()
-						.map(x -> x.getKey() + " :"
-								+ (this.located.get(x) == null ? "" : this.located.get(x) + " ")
+						.map(x -> x.getKey()
+								+ (this.located.get(x.getKey()) == null
+										? " :"
+										: ":" + this.located.get(x.getKey()) + " ")
 								+ "= " + x.getValue())
 						.collect(Collectors.joining(", "))
 				+ "> " + this.assertion

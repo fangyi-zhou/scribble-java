@@ -1,8 +1,11 @@
 package org.scribble.ext.assrt.core.type.session.global;
 
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.antlr.runtime.tree.CommonTree;
@@ -61,10 +64,19 @@ public class AssrtCoreGRecVar extends AssrtCoreRecVar<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLRecVar projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f)
+			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 	{
+		Iterator<Entry<AssrtIntVar, Role>> it = located.get(this.recvar).entrySet()
+				.iterator();
+		List<AssrtAFormula> sexprs = this.stateexprs.stream()
+				.filter(x ->
+					{
+						Role r = it.next().getValue();
+						return r == null || r.equals(self);  // TODO null
+					})
+				.collect(Collectors.toList());
 		return ((AssrtCoreLTypeFactory) core.config.tf.local).AssrtCoreLRecVar(null,
-				this.recvar, this.stateexprs);
+				this.recvar, sexprs);
 	}
 
 	@Override

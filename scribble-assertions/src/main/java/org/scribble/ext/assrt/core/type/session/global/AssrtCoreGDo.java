@@ -119,7 +119,8 @@ public class AssrtCoreGDo extends AssrtCoreDo<Global, AssrtCoreGType>
 
 	@Override
 	public AssrtCoreLType projectInlined(AssrtCore core, Role self,
-			AssrtBFormula f) throws AssrtCoreSyntaxException
+			AssrtBFormula f, Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
+			throws AssrtCoreSyntaxException
 	{
 		throw new RuntimeException("[TODO] :\n\t" + this);
 	}

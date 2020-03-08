@@ -1,10 +1,12 @@
 package org.scribble.ext.assrt.core.type.session.global;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.scribble.core.type.kind.Global;
 import org.scribble.core.type.name.DataName;
+import org.scribble.core.type.name.RecVar;
 import org.scribble.core.type.name.Role;
 import org.scribble.core.type.name.Substitutions;
 import org.scribble.ext.assrt.core.job.AssrtCore;
@@ -30,7 +32,8 @@ public interface AssrtCoreGType extends AssrtCoreSType<Global, AssrtCoreGType>
 	AssrtCoreGType inline(AssrtCoreGTypeInliner v);
 	AssrtCoreGType pruneRecs(AssrtCore core);
 
-	AssrtCoreLType projectInlined(AssrtCore core, Role self, AssrtBFormula f)
+	AssrtCoreLType projectInlined(AssrtCore core, Role self, AssrtBFormula f,
+			Map<RecVar, LinkedHashMap<AssrtIntVar, Role>> located)
 			throws AssrtCoreSyntaxException;  // N.B. checking "mergability"
 	
 	List<AssrtAnnotDataName> collectAnnotDataVarDecls(
