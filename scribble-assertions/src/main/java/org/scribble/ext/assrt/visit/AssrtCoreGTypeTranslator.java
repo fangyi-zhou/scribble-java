@@ -78,12 +78,12 @@ import org.scribble.visit.GTypeTranslator;
 public class AssrtCoreGTypeTranslator extends GTypeTranslator
 {
 	public static final DataName UNIT_DATATYPE = new DataName("_Unit");  // TODO
-	
+
 	private static int varCounter = 1;
 	private static int recCounter = 1;
-	
+
 	public final AssrtCoreSTypeFactory tf;  // Shadows super
-	
+
 	//private static DataType UNIT_TYPE;
 	protected AssrtCoreGTypeTranslator(Job job, ModuleName rootFullname, STypeFactory tf)
 	{
@@ -107,7 +107,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 			throws AssrtCoreSyntaxException
 	{
 		GProtoDef def = n.getDefChild();
-		
+
 		Module m = (Module) n.getParent();
 		List<ProtoMod> mods = n.getModifierListChild().getModList().stream()
 				.map(x -> x.toProtoMod()).collect(Collectors.toList());
@@ -142,14 +142,14 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 		}
 		AssrtBExprNode tmp2 = hdr.getAnnotAssertChild();
 		AssrtBFormula ass = (tmp2 == null) ? AssrtTrueFormula.TRUE : tmp2.expr;
-		
+
 		/*Map<AssrtIntVar, DataName> env = body.assrtCoreGather(
 				new AssrtCoreVarEnvGatherer<Global, AssrtCoreGType>()::visit)
 				.collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
 		svars.keySet().forEach(x -> env.put(x, new DataName("int")));  // FIXME
 		body = body.disamb((AssrtCore) this.job.getCore(), env);
 		ass = (AssrtBFormula) ass.disamb(env);*/
-		
+
 		return new AssrtCoreGProtocol(n, mods, fullname, rs, ps, body, svars,
 				ass, located);
 	}
@@ -250,7 +250,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 			{
 				throw new RuntimeException("[assrt-core] Shouldn't get in here: " + c);
 			}
-			
+
 			if (kind == null)
 			{
 				kind = tmp.kind;
@@ -267,7 +267,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 				throw new AssrtCoreSyntaxException(n.getSource(),
 						"[assrt-core] Non-directed choice not supported:\n" + n);
 			}
-			
+
 			// "Flatten" nested choices (already checked they are guarded) -- Scribble choice subjects ignored
 			for (Entry<AssrtCoreMsg, AssrtCoreGType> e : tmp.cases.entrySet())
 			{
@@ -280,7 +280,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 				cases.put(k, e.getValue());
 			}
 		}
-		
+
 		return this.tf.global.AssrtCoreGChoice(n, src, (AssrtCoreGActionKind) kind,
 				dst, cases);
 	}
@@ -364,7 +364,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 	}
 
 	// Duplicated from parseGMsgTransfer (MsgTransfer and ConnectionAction have no common base
-	
+
 	/*private AssrtCoreGChoice parseAssrtGConnect(List<GSimpleSessionNode> is,
 			Map<RecVar, RecVar> rvs, AssrtGConnect gc) throws AssrtCoreSyntaxException
 	{
@@ -389,8 +389,8 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 					"[assrt-core] Self-communication (shouldn't get in here): " + src
 							+ ", " + dst);
 		}
-		
-		AssrtCoreGType cont = parseSeq(is.subList(1, is.size()), rvs, false, false);  
+
+		AssrtCoreGType cont = parseSeq(is.subList(1, is.size()), rvs, false, false);
 				// Subseqeuent choice/rec is guarded by (at least) this action
 		LinkedHashMap<AssrtCoreMsg, AssrtCoreGType> cases = new LinkedHashMap<>();
 		cases.put(msg, cont);
@@ -462,23 +462,23 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 //			{
 //				throw new AssrtCoreSyntaxException("[assrt-core] Payload element not supported: " + pe);
 //			}
-			
+
 			if (e instanceof AssrtAnnotDataElem)
 			{
 				AssrtAnnotDataName data = ((AssrtAnnotDataElem) e).toPayloadType();
 				String type = data.data.toString();
 				if (!type.equals("int") && !type.endsWith(".int")  // HACK FIXME (currently "int" for F# -- because STP takes dot)
-						&& !type.equals("String"))
+						&& !type.equals("String") && !type.equals("string"))
 				{
 					throw new AssrtCoreSyntaxException(e.getSource(),
 							"[assrt-core] Payload annotations not supported for non- \"int\" type kind: "
 									+ e);
 				}
-				
+
 				// FIXME: non-annotated payload elems get created with fresh vars, i.e., non- int types
 				// Also empty payloads are created as Unit type
 				// But current model building implicitly treats all vars as int -- this works, but is not clean
-				
+
 				//return adt;
 				res.add(data);
 			}
@@ -525,7 +525,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 	{
 		return n.toName();
 	}
-	
+
 	private Role parseDstRole(DirectedInteraction<Global> n)
 			throws AssrtCoreSyntaxException
 	{
@@ -542,7 +542,7 @@ public class AssrtCoreGTypeTranslator extends GTypeTranslator
 	{
 		return r.toName();
 	}
-	
+
 	private static AssrtIntVar makeFreshDataTypeVar()
 	{
 		return new AssrtIntVar("_dum" + varCounter++);
