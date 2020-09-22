@@ -3,14 +3,13 @@ package calculator;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import org.scribble.main.ScribbleRuntimeException;
-import org.scribble.net.ObjectStreamFormatter;
-import org.scribble.net.scribsock.ScribServerSocket;
-import org.scribble.net.scribsock.SocketChannelServer;
-import org.scribble.net.session.MPSTEndpoint;
-import org.scribble.net.session.SocketChannelEndpoint;
+import org.scribble.runtime.util.Buf;
+import org.scribble.runtime.message.ObjectStreamFormatter;
+import org.scribble.runtime.net.ScribServerSocket;
+import org.scribble.runtime.net.SocketChannelServer;
+import org.scribble.runtime.session.MPSTEndpoint;
+import org.scribble.runtime.net.SocketChannelEndpoint;
 
-import voting.EProtocol.EVoting.EVoting;
 import calculator.EProtocol.Calc.Calc;
 import calculator.EProtocol.Calc.channels.S.Calc_S_1;
 import calculator.EProtocol.Calc.roles.S;
@@ -18,7 +17,7 @@ import calculator.EProtocol.Calc.roles.S;
 
 public class Server
 {
-	public static void main(String[] args) throws IOException, ScribbleRuntimeException, ExecutionException, InterruptedException, ClassNotFoundException
+	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException, ClassNotFoundException
 	{
 		try (ScribServerSocket ss_C = new SocketChannelServer(7777))
 		{
