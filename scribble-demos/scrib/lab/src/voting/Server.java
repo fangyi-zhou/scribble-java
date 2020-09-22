@@ -7,27 +7,26 @@ import java.util.concurrent.ExecutionException;
 
 import javax.management.relation.Role;
 
-import org.scribble.main.ScribbleRuntimeException;
-import org.scribble.net.Buf;
-import org.scribble.net.ObjectStreamFormatter;
-import org.scribble.net.scribsock.ScribServerSocket;
-import org.scribble.net.scribsock.SocketChannelServer;
-import org.scribble.net.session.MPSTEndpoint;
-import org.scribble.net.session.SocketChannelEndpoint;
+import org.scribble.runtime.util.Buf;
+import org.scribble.runtime.message.ObjectStreamFormatter;
+import org.scribble.runtime.net.ScribServerSocket;
+import org.scribble.runtime.net.SocketChannelServer;
+import org.scribble.runtime.session.MPSTEndpoint;
+import org.scribble.runtime.net.SocketChannelEndpoint;
 
 import voting.EProtocol.EVoting.EVoting;
-import voting.EProtocol.EVoting.channels.S.EVoting_S_1;
-import voting.EProtocol.EVoting.channels.S.EVoting_S_2;
-import voting.EProtocol.EVoting.channels.S.EVoting_S_3;
-import voting.EProtocol.EVoting.channels.S.EVoting_S_3_Cases;
-import voting.EProtocol.EVoting.channels.S.EVoting_S_4;
-import voting.EProtocol.EVoting.channels.S.ioifaces.Branch_S_V_No_String__V_Yes_String.Branch_S_V_No_String__V_Yes_String_Enum;
+import voting.EProtocol.EVoting.statechans.S.EVoting_S_1;
+import voting.EProtocol.EVoting.statechans.S.EVoting_S_2;
+import voting.EProtocol.EVoting.statechans.S.EVoting_S_3;
+import voting.EProtocol.EVoting.statechans.S.EVoting_S_3_Cases;
+import voting.EProtocol.EVoting.statechans.S.EVoting_S_4;
+import voting.EProtocol.EVoting.statechans.S.ioifaces.Branch_S_V_No_String__V_Yes_String.Branch_S_V_No_String__V_Yes_String_Enum;
 import voting.EProtocol.EVoting.roles.S;
 
 public class Server
 {	
 	
-	public static void main(String[] args) throws IOException, ScribbleRuntimeException, ExecutionException, InterruptedException, ClassNotFoundException
+	public static void main(String[] args) throws IOException, ExecutionException, InterruptedException, ClassNotFoundException
 	{
 		try (ScribServerSocket ss_v = new SocketChannelServer(7777))
 		{
