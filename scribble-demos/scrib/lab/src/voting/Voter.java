@@ -24,7 +24,7 @@ public class Voter
 		EVoting vp = new EVoting();
 		try (MPSTEndpoint<EVoting, V> se = new MPSTEndpoint<>(vp, EVoting.V, new ObjectStreamFormatter()))
 		{
-			se.connect(EVoting.S, SocketChannelEndpoint::new, "localhost", 7777);
+			se.request(EVoting.S, SocketChannelEndpoint::new, "localhost", 7777);
 			String name = "my name";
 			System.out.println("Connected");
 

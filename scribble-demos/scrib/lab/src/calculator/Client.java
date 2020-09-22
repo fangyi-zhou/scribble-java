@@ -19,7 +19,7 @@ public class Client
 		Calc calculator = new Calc();
 		try (MPSTEndpoint<Calc, C> se = new MPSTEndpoint<>(calculator, Calc.C, new ObjectStreamFormatter()))
 		{
-			se.connect(Calc.S, SocketChannelEndpoint::new, "localhost", 8888);
+			se.request(Calc.S, SocketChannelEndpoint::new, "localhost", 8888);
 			
 			Calc_C_1 s1 = new Calc_C_1(se);
 			
