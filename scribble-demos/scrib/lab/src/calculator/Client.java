@@ -9,7 +9,7 @@ import org.scribble.runtime.session.MPSTEndpoint;
 import org.scribble.runtime.net.SocketChannelEndpoint;
 
 import calculator.EProtocol.Calc.Calc;
-import calculator.EProtocol.Calc.channels.C.Calc_C_1;
+import calculator.EProtocol.Calc.statechans.C.Calc_C_1;
 import calculator.EProtocol.Calc.roles.C;
 
 public class Client

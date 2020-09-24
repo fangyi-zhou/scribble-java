@@ -11,7 +11,7 @@ import org.scribble.runtime.session.MPSTEndpoint;
 import org.scribble.runtime.net.SocketChannelEndpoint;
 
 import calculator.EProtocol.Calc.Calc;
-import calculator.EProtocol.Calc.channels.S.Calc_S_1;
+import calculator.EProtocol.Calc.statechans.S.Calc_S_1;
 import calculator.EProtocol.Calc.roles.S;
 
 
